@@ -4,7 +4,7 @@ const scenarios = [
 
   {
     id: "p01",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "pitching",
     situation: { inning: 3, half: "top", outs: 1, runners: { first: false, second: false, third: false }, score: { home: 2, away: 1 }, count: { balls: 0, strikes: 2 } },
     archetypes: { batter: "Free Swinger", pitcher: "Hard Thrower", runner: null, fielder: null },
@@ -23,7 +23,7 @@ const scenarios = [
 
   {
     id: "p02",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "pitching",
     situation: { inning: 5, half: "bottom", outs: 2, runners: { first: false, second: false, third: false }, score: { home: 4, away: 2 }, count: { balls: 0, strikes: 0 } },
     archetypes: { batter: "Weak Contact, Puts It on the Ground", pitcher: "Sinkerballer", runner: null, fielder: null },
@@ -118,7 +118,7 @@ const scenarios = [
 
   {
     id: "p07",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "pitching",
     situation: { inning: 2, half: "top", outs: 1, runners: { first: true, second: false, third: false }, score: { home: 0, away: 0 }, count: { balls: 1, strikes: 1 } },
     archetypes: { batter: "Pull Hitter", pitcher: "Veteran Starter", runner: "Slow Runner", fielder: null },
@@ -158,7 +158,7 @@ const scenarios = [
 
   {
     id: "b01",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "batting",
     situation: { inning: 4, half: "bottom", outs: 1, runners: { first: false, second: true, third: false }, score: { home: 1, away: 2 }, count: { balls: 1, strikes: 0 } },
     archetypes: { batter: "Gap Hitter", pitcher: "Two-Pitch Pitcher", runner: "Slow Runner", fielder: null },
@@ -215,7 +215,7 @@ const scenarios = [
 
   {
     id: "b04",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "batting",
     situation: { inning: 1, half: "top", outs: 0, runners: { first: false, second: false, third: false }, score: { home: 0, away: 0 } , count: { balls: 0, strikes: 0 } },
     archetypes: { batter: "Leadoff Hitter", pitcher: "Unknown Pitcher", runner: null, fielder: null },
@@ -291,7 +291,7 @@ const scenarios = [
 
   {
     id: "b08",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "batting",
     situation: { inning: 6, half: "bottom", outs: 0, runners: { first: false, second: false, third: false }, score: { home: 2, away: 4 }, count: { balls: 0, strikes: 0 } },
     archetypes: { batter: "Cleanup Hitter", pitcher: "Power Arm", runner: null, fielder: null },
@@ -312,7 +312,7 @@ const scenarios = [
 
   {
     id: "d01",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "defense",
     situation: { inning: 7, half: "top", outs: 1, runners: { first: false, second: true, third: false }, score: { home: 3, away: 3 }, count: { balls: 0, strikes: 0 } },
     archetypes: { batter: "Ground Ball Hitter", pitcher: "Sinker Specialist", runner: "Average Runner", fielder: "Third Baseman" },
@@ -388,7 +388,7 @@ const scenarios = [
 
   {
     id: "d05",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "defense",
     situation: { inning: 6, half: "top", outs: 0, runners: { first: false, second: false, third: false }, score: { home: 3, away: 2 }, count: { balls: 0, strikes: 0 } },
     archetypes: { batter: "Right-Handed Pull Hitter", pitcher: "Fly Ball Pitcher", runner: null, fielder: "Right Fielder" },
@@ -409,7 +409,7 @@ const scenarios = [
 
   {
     id: "br01",
-    difficulty: "rookie",
+    difficulty: "minors",
     type: "baserunning",
     situation: { inning: 3, half: "top", outs: 1, runners: { first: false, second: true, third: false }, score: { home: 0, away: 0 }, count: { balls: 0, strikes: 0 } },
     archetypes: { batter: "Contact Hitter", pitcher: "Sinker Specialist", runner: "Average Runner", fielder: "Shortstop" },

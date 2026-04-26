@@ -38,11 +38,22 @@ export function applyDelta(currentIQ, delta) {
   return Math.max(IQ_FLOOR, currentIQ + delta);
 }
 
-export function selectRunScenarios(allScenarios) {
-  const rookie = shuffle(allScenarios.filter((s) => s.difficulty === "rookie"));
-  const pro = shuffle(allScenarios.filter((s) => s.difficulty === "pro"));
+// difficulty: "minors" | "pro" | "allstar"
+export function selectRunScenarios(allScenarios, difficulty = "pro") {
+  const minors  = shuffle(allScenarios.filter((s) => s.difficulty === "minors"));
+  const pro     = shuffle(allScenarios.filter((s) => s.difficulty === "pro"));
   const allstar = shuffle(allScenarios.filter((s) => s.difficulty === "allstar"));
-  return [...rookie.slice(0, 3), ...pro.slice(0, 4), ...allstar.slice(0, 3)];
+
+  if (difficulty === "minors") {
+    // All 9 minors + 1 pro for a taste of the next level
+    return [...minors, ...pro.slice(0, 1)];
+  }
+  if (difficulty === "allstar") {
+    // All 7 all-star + 3 pro to fill out the 10
+    return [...shuffle([...pro.slice(0, 3), ...allstar])];
+  }
+  // Pro: full 10 pro scenarios
+  return pro.slice(0, 10);
 }
 
 function shuffle(arr) {

@@ -1,3 +1,6 @@
+// Pixel grid: 1 unit = 4px SVG. ViewBox 120×180 = 30×45 pixel grid.
+// Design inspired by SNES baseball — big head, barrel chest, chunky limbs.
+
 export default function AceSprite({ animation = "idle", size = 120 }) {
   const h = Math.round(180 * size / 120);
 
@@ -7,290 +10,230 @@ export default function AceSprite({ animation = "idle", size = 120 }) {
       style={{ width: size, height: h, display: "inline-block", flexShrink: 0 }}
     >
       <style>{`
-        /* ── palette ── */
-        :root {
-          --s-outline: #111;
-          --s-skin:    #d4956a;
-          --s-skind:   #b8724a;
-          --s-navy:    #0d1f3c;
-          --s-navym:   #1a3a5c;
-          --s-white:   #f0ece0;
-          --s-red:     #c41230;
-          --s-cleat:   #1e1e1e;
-          --s-gold:    #c8a000;
-        }
+        /* palette */
+        .ace-svg { --k: #111; --sk: #d4956a; --skd: #a06040; --nv: #0d1f3c;
+                   --nm: #1a3a5c; --wh: #f0ece0; --re: #c41230; --cl: #181818;
+                   --gl: #9b5520; --gld: #6b3510; --au: #c8a000; }
 
-        /* ── shared animation setup ── */
+        /* pivot anchors */
         .ace-anim-idle  #ace-body,
         .ace-anim-pitch #ace-body,
-        .ace-anim-bat   #ace-body         { transform-box: fill-box; transform-origin: center bottom; }
-
+        .ace-anim-bat   #ace-body        { transform-box:fill-box; transform-origin:center bottom; }
         .ace-anim-idle  #ace-glove-arm,
         .ace-anim-pitch #ace-glove-arm,
-        .ace-anim-bat   #ace-glove-arm    { transform-box: fill-box; transform-origin: right top; }
-
+        .ace-anim-bat   #ace-glove-arm   { transform-box:fill-box; transform-origin:right top; }
         .ace-anim-idle  #ace-throwing-arm,
         .ace-anim-pitch #ace-throwing-arm,
-        .ace-anim-bat   #ace-throwing-arm { transform-box: fill-box; transform-origin: left top; }
-
+        .ace-anim-bat   #ace-throwing-arm{ transform-box:fill-box; transform-origin:left top; }
         .ace-anim-idle  #ace-leg-kick,
         .ace-anim-pitch #ace-leg-kick,
-        .ace-anim-bat   #ace-leg-kick     { transform-box: fill-box; transform-origin: center top; }
-
+        .ace-anim-bat   #ace-leg-kick    { transform-box:fill-box; transform-origin:center top; }
         .ace-anim-idle  #ace-head,
         .ace-anim-pitch #ace-head,
-        .ace-anim-bat   #ace-head         { transform-box: fill-box; transform-origin: center bottom; }
+        .ace-anim-bat   #ace-head        { transform-box:fill-box; transform-origin:center bottom; }
 
-        /* ────────── IDLE ────────── */
-        .ace-anim-idle #ace-body      { animation: aceIdleBody 3s ease-in-out infinite; }
-        .ace-anim-idle #ace-glove-arm { animation: aceIdleGlove 3s ease-in-out infinite; }
-        .ace-anim-idle #ace-head      { animation: aceIdleHead 4s ease-in-out infinite; }
+        /* bat only shows in batting stance */
+        #ace-bat { opacity:0; }
+        .ace-anim-bat #ace-bat { opacity:1; }
 
-        @keyframes aceIdleBody {
-          0%,100% { transform: translateX(0); }
-          35%     { transform: translateX(-2px); }
-          70%     { transform: translateX(2px); }
-        }
-        @keyframes aceIdleGlove {
-          0%,72%,100% { transform: translateY(0); }
-          82%          { transform: translateY(5px); }
-          90%          { transform: translateY(2px); }
-        }
-        @keyframes aceIdleHead {
-          0%,100% { transform: rotate(0deg); }
-          50%     { transform: rotate(-2deg); }
-        }
+        /* ── IDLE ── */
+        .ace-anim-idle #ace-body      { animation: i-body  3s ease-in-out infinite; }
+        .ace-anim-idle #ace-glove-arm { animation: i-glove 3s ease-in-out infinite; }
+        .ace-anim-idle #ace-head      { animation: i-head  4s ease-in-out infinite; }
+        @keyframes i-body  { 0%,100%{transform:translateX(0)}  38%{transform:translateX(-2px)} 72%{transform:translateX(2px)} }
+        @keyframes i-glove { 0%,74%,100%{transform:translateY(0)} 84%{transform:translateY(6px)} 92%{transform:translateY(3px)} }
+        @keyframes i-head  { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-2deg)} }
 
-        /* ────────── PITCH ────────── */
-        .ace-anim-pitch #ace-body         { animation: acePitchBody 1.2s ease-in-out forwards; }
-        .ace-anim-pitch #ace-throwing-arm { animation: acePitchArm  1.2s ease-in-out forwards; }
-        .ace-anim-pitch #ace-leg-kick     { animation: acePitchLeg  1.2s ease-in-out forwards; }
-        .ace-anim-pitch #ace-glove-arm    { animation: acePitchGlove 1.2s ease-in-out forwards; }
-        .ace-anim-pitch #ace-head         { animation: acePitchHead 1.2s ease-in-out forwards; }
+        /* ── PITCH ── */
+        .ace-anim-pitch #ace-body         { animation: p-body  1.2s ease-in-out forwards; }
+        .ace-anim-pitch #ace-throwing-arm { animation: p-arm   1.2s ease-in-out forwards; }
+        .ace-anim-pitch #ace-leg-kick     { animation: p-leg   1.2s ease-in-out forwards; }
+        .ace-anim-pitch #ace-glove-arm    { animation: p-glove 1.2s ease-in-out forwards; }
+        .ace-anim-pitch #ace-head         { animation: p-head  1.2s ease-in-out forwards; }
+        @keyframes p-body  { 0%{transform:rotate(0)translateX(0)} 22%{transform:rotate(-8deg)translateX(-5px)} 55%{transform:rotate(-12deg)translateX(-7px)} 76%{transform:rotate(10deg)translateX(7px)} 92%{transform:rotate(3deg)translateX(2px)} 100%{transform:rotate(0)translateX(0)} }
+        @keyframes p-arm   { 0%{transform:rotate(0)} 28%{transform:rotate(-32deg)} 60%{transform:rotate(-58deg)} 78%{transform:rotate(42deg)} 100%{transform:rotate(0)} }
+        @keyframes p-leg   { 0%{transform:rotate(0)translateY(0)} 20%{transform:rotate(14deg)translateY(-8px)} 54%{transform:rotate(66deg)translateY(-36px)} 84%{transform:rotate(4deg)translateY(-2px)} 100%{transform:rotate(0)translateY(0)} }
+        @keyframes p-glove { 0%{transform:rotate(0)translateY(0)} 42%{transform:rotate(20deg)translateY(-12px)} 76%{transform:rotate(-14deg)translateY(7px)} 100%{transform:rotate(0)translateY(0)} }
+        @keyframes p-head  { 0%{transform:rotate(0)} 50%{transform:rotate(-10deg)} 80%{transform:rotate(8deg)} 100%{transform:rotate(0)} }
 
-        @keyframes acePitchBody {
-          0%   { transform: rotate(0deg) translateX(0); }
-          20%  { transform: rotate(-7deg) translateX(-4px); }
-          55%  { transform: rotate(-11deg) translateX(-6px); }
-          75%  { transform: rotate(9deg) translateX(6px); }
-          90%  { transform: rotate(3deg) translateX(2px); }
-          100% { transform: rotate(0deg) translateX(0); }
-        }
-        @keyframes acePitchArm {
-          0%   { transform: rotate(0deg); }
-          25%  { transform: rotate(-28deg); }
-          58%  { transform: rotate(-55deg); }
-          76%  { transform: rotate(38deg); }
-          100% { transform: rotate(0deg); }
-        }
-        @keyframes acePitchLeg {
-          0%   { transform: rotate(0deg) translateY(0); }
-          18%  { transform: rotate(12deg) translateY(-6px); }
-          52%  { transform: rotate(62deg) translateY(-32px); }
-          82%  { transform: rotate(4deg) translateY(-2px); }
-          100% { transform: rotate(0deg) translateY(0); }
-        }
-        @keyframes acePitchGlove {
-          0%   { transform: rotate(0deg) translateY(0); }
-          40%  { transform: rotate(18deg) translateY(-10px); }
-          75%  { transform: rotate(-12deg) translateY(6px); }
-          100% { transform: rotate(0deg) translateY(0); }
-        }
-        @keyframes acePitchHead {
-          0%   { transform: rotate(0deg); }
-          48%  { transform: rotate(-9deg); }
-          78%  { transform: rotate(7deg); }
-          100% { transform: rotate(0deg); }
-        }
-
-        /* ────────── BAT ────────── */
-        .ace-anim-bat #ace-body         { animation: aceBatBody  2s ease-in-out infinite; }
-        .ace-anim-bat #ace-throwing-arm { animation: aceBatArm   2s ease-in-out infinite; }
-        .ace-anim-bat #ace-glove-arm    { animation: aceBatGlove 2s ease-in-out infinite; }
-        .ace-anim-bat #ace-head         { animation: aceBatHead  2s ease-in-out infinite; }
-
-        @keyframes aceBatBody {
-          0%,100% { transform: translateY(0) rotate(-2deg); }
-          50%     { transform: translateY(3px) rotate(2deg); }
-        }
-        @keyframes aceBatArm {
-          0%,100% { transform: rotate(-4deg); }
-          50%     { transform: rotate(4deg); }
-        }
-        @keyframes aceBatGlove {
-          0%,100% { transform: rotate(3deg); }
-          50%     { transform: rotate(-3deg); }
-        }
-        @keyframes aceBatHead {
-          0%,100% { transform: rotate(3deg); }
-          50%     { transform: rotate(-2deg); }
-        }
+        /* ── BAT ── */
+        .ace-anim-bat #ace-body         { animation: b-body  2s ease-in-out infinite; }
+        .ace-anim-bat #ace-throwing-arm { animation: b-arm   2s ease-in-out infinite; }
+        .ace-anim-bat #ace-glove-arm    { animation: b-glove 2s ease-in-out infinite; }
+        .ace-anim-bat #ace-head         { animation: b-head  2s ease-in-out infinite; }
+        .ace-anim-bat #ace-bat          { animation: b-bat   2s ease-in-out infinite; transform-box:fill-box; transform-origin:bottom center; }
+        @keyframes b-body  { 0%,100%{transform:translateY(0)rotate(-2deg)} 50%{transform:translateY(3px)rotate(2deg)} }
+        @keyframes b-arm   { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+        @keyframes b-glove { 0%,100%{transform:rotate(4deg)} 50%{transform:rotate(-4deg)} }
+        @keyframes b-head  { 0%,100%{transform:rotate(3deg)} 50%{transform:rotate(-2deg)} }
+        @keyframes b-bat   { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
       `}</style>
 
-      <svg
-        viewBox="0 0 120 180"
-        width={size}
-        height={h}
+      <svg className="ace-svg"
+        viewBox="0 0 120 180" width={size} height={h}
         xmlns="http://www.w3.org/2000/svg"
         aria-label="The Ace — fictional pitcher mascot"
+        shapeRendering="crispEdges"
         style={{ overflow: "visible", display: "block" }}
       >
-        {/* ground shadow */}
-        <ellipse cx="57" cy="176" rx="30" ry="5" fill="rgba(0,0,0,0.22)" />
+        {/* ── ground shadow ── */}
+        <ellipse cx="58" cy="177" rx="32" ry="6" fill="rgba(0,0,0,0.22)" />
 
-        {/* ═══ STANDING LEG (right, plant foot) — behind body ═══ */}
+        {/* ══ STANDING LEG (right, plant foot) ══ */}
         <g id="ace-standing-leg">
-          {/* thigh */}
-          <polygon points="57,122 73,122 71,154 55,154"
-            fill="var(--s-white)" stroke="var(--s-outline)" strokeWidth="3" />
+          {/* thigh — wide chunky block */}
+          <rect x="59" y="120" width="22" height="32" rx="2" fill="var(--wh)" stroke="var(--k)" strokeWidth="3" />
           {/* shin */}
-          <polygon points="56,152 71,152 69,172 54,172"
-            fill="var(--s-white)" stroke="var(--s-outline)" strokeWidth="3" />
-          {/* stirrup stripe */}
-          <rect x="56" y="160" width="13" height="6" rx="1" fill="var(--s-red)" />
-          {/* cleat */}
-          <polygon points="50,170 76,170 78,178 48,178"
-            fill="var(--s-cleat)" stroke="var(--s-outline)" strokeWidth="2.5" />
-          <rect x="52" y="174" width="5" height="5" rx="1" fill="#3a3a3a" />
-          <rect x="60" y="174" width="5" height="5" rx="1" fill="#3a3a3a" />
-          <rect x="68" y="174" width="5" height="5" rx="1" fill="#3a3a3a" />
+          <rect x="60" y="149" width="20" height="22" rx="2" fill="var(--wh)" stroke="var(--k)" strokeWidth="3" />
+          {/* stirrup — thick stripe */}
+          <rect x="61" y="158" width="17" height="8" fill="var(--re)" />
+          {/* cleat — wide square toe */}
+          <rect x="54" y="168" width="32" height="13" rx="3" fill="var(--cl)" stroke="var(--k)" strokeWidth="3" />
+          {/* cleats spikes */}
+          <rect x="57" y="177" width="7" height="5" rx="1" fill="#333" />
+          <rect x="67" y="177" width="7" height="5" rx="1" fill="#333" />
+          <rect x="77" y="177" width="5" height="5" rx="1" fill="#333" />
         </g>
 
-        {/* ═══ KICK LEG (left leg — animates during pitch) ═══ */}
+        {/* ══ KICK LEG (left, animates on pitch) ══ */}
         <g id="ace-leg-kick">
-          {/* thigh */}
-          <polygon points="41,122 57,122 55,154 39,154"
-            fill="var(--s-white)" stroke="var(--s-outline)" strokeWidth="3" />
-          {/* shin */}
-          <polygon points="40,152 55,152 53,172 38,172"
-            fill="var(--s-white)" stroke="var(--s-outline)" strokeWidth="3" />
-          {/* stirrup */}
-          <rect x="40" y="160" width="13" height="6" rx="1" fill="var(--s-red)" />
-          {/* cleat */}
-          <polygon points="34,170 60,170 62,178 32,178"
-            fill="var(--s-cleat)" stroke="var(--s-outline)" strokeWidth="2.5" />
-          <rect x="36" y="174" width="5" height="5" rx="1" fill="#3a3a3a" />
-          <rect x="44" y="174" width="5" height="5" rx="1" fill="#3a3a3a" />
-          <rect x="52" y="174" width="5" height="5" rx="1" fill="#3a3a3a" />
+          <rect x="37" y="120" width="22" height="32" rx="2" fill="var(--wh)" stroke="var(--k)" strokeWidth="3" />
+          <rect x="38" y="149" width="20" height="22" rx="2" fill="var(--wh)" stroke="var(--k)" strokeWidth="3" />
+          <rect x="39" y="158" width="17" height="8" fill="var(--re)" />
+          <rect x="32" y="168" width="32" height="13" rx="3" fill="var(--cl)" stroke="var(--k)" strokeWidth="3" />
+          <rect x="35" y="177" width="5" height="5" rx="1" fill="#333" />
+          <rect x="43" y="177" width="7" height="5" rx="1" fill="#333" />
+          <rect x="53" y="177" width="7" height="5" rx="1" fill="#333" />
         </g>
 
-        {/* ═══ BODY GROUP ═══ */}
+        {/* ══ BODY GROUP ══ */}
         <g id="ace-body">
 
           {/* ── GLOVE ARM (left / non-throwing) ── */}
           <g id="ace-glove-arm">
-            {/* upper arm — slopes left and down from shoulder */}
-            <polygon points="22,68 38,68 30,94 14,94"
-              fill="var(--s-navy)" stroke="var(--s-outline)" strokeWidth="3" />
-            {/* forearm — continues down-left */}
-            <polygon points="12,92 28,92 20,114 4,114"
-              fill="var(--s-navy)" stroke="var(--s-outline)" strokeWidth="3" />
-            {/* glove mitt — chunky oval */}
-            <ellipse cx="5" cy="122" rx="13" ry="11"
-              fill="var(--s-red)" stroke="var(--s-outline)" strokeWidth="3" />
-            <ellipse cx="5" cy="122" rx="8" ry="7" fill="#8b0010" />
-            {/* glove lacing / finger ridges */}
-            <line x1="-1" y1="115" x2="-3" y2="109" stroke="var(--s-outline)" strokeWidth="2.2" strokeLinecap="round" />
-            <line x1="5"  y1="113" x2="4"  y2="107" stroke="var(--s-outline)" strokeWidth="2.2" strokeLinecap="round" />
-            <line x1="12" y1="114" x2="13" y2="108" stroke="var(--s-outline)" strokeWidth="2.2" strokeLinecap="round" />
+            {/* upper arm — chunky, 20px wide */}
+            <rect x="2" y="68" width="20" height="28" rx="5" fill="var(--nv)" stroke="var(--k)" strokeWidth="3" />
+            {/* forearm */}
+            <rect x="0" y="93" width="18" height="22" rx="5" fill="var(--nv)" stroke="var(--k)" strokeWidth="3" />
+            {/* glove — big chunky mitt */}
+            <rect x="-4" y="112" width="26" height="22" rx="6" fill="var(--gl)" stroke="var(--k)" strokeWidth="3" />
+            {/* glove pocket */}
+            <rect x="-1" y="116" width="20" height="16" rx="4" fill="var(--gld)" />
+            {/* finger lumps on top of glove */}
+            <rect x="-4" y="108" width="7" height="8" rx="2" fill="var(--gl)" stroke="var(--k)" strokeWidth="2.5" />
+            <rect x="4"  y="107" width="7" height="8" rx="2" fill="var(--gl)" stroke="var(--k)" strokeWidth="2.5" />
+            <rect x="12" y="108" width="7" height="8" rx="2" fill="var(--gl)" stroke="var(--k)" strokeWidth="2.5" />
+            {/* webbing line */}
+            <path d="M-1,116 Q9,112 20,116" stroke="var(--k)" strokeWidth="2" fill="none" />
           </g>
 
           {/* ── THROWING ARM (right) ── */}
           <g id="ace-throwing-arm">
-            {/* upper arm — from right shoulder going right + slightly down */}
-            <polygon points="86,68 100,68 110,88 96,88"
-              fill="var(--s-navy)" stroke="var(--s-outline)" strokeWidth="3" />
-            {/* forearm — from elbow forward and slightly up */}
-            <polygon points="104,86 116,86 120,74 108,74"
-              fill="var(--s-navym)" stroke="var(--s-outline)" strokeWidth="3" />
+            {/* upper arm */}
+            <rect x="96" y="68" width="20" height="28" rx="5" fill="var(--nv)" stroke="var(--k)" strokeWidth="3" />
+            {/* forearm */}
+            <rect x="100" y="93" width="18" height="22" rx="5" fill="var(--nm)" stroke="var(--k)" strokeWidth="3" />
             {/* hand */}
-            <circle cx="119" cy="70" r="9"
-              fill="var(--s-skin)" stroke="var(--s-outline)" strokeWidth="3" />
-            {/* baseball in grip */}
-            <circle cx="119" cy="70" r="6"
-              fill="var(--s-white)" stroke="var(--s-outline)" strokeWidth="1.8" />
-            <path d="M115,67 Q117,65 119,67" stroke="var(--s-red)" strokeWidth="1.3" fill="none" strokeLinecap="round" />
-            <path d="M119,72 Q121,74 123,72" stroke="var(--s-red)" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+            <circle cx="112" cy="122" r="11" fill="var(--sk)" stroke="var(--k)" strokeWidth="3" />
+            {/* baseball */}
+            <circle cx="112" cy="122" r="8" fill="var(--wh)" stroke="var(--k)" strokeWidth="2" />
+            {/* laces */}
+            <path d="M107,119 Q109,116 111,119" stroke="var(--re)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            <path d="M113,124 Q115,127 117,124" stroke="var(--re)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
           </g>
 
-          {/* ── TORSO / JERSEY — wide shoulders, tapered waist ── */}
-          {/* main body */}
-          <polygon points="20,66 96,66 90,122 26,122"
-            fill="var(--s-navy)" stroke="var(--s-outline)" strokeWidth="3" />
-          {/* chest shading panel */}
-          <polygon points="32,68 82,68 78,114 38,114"
-            fill="var(--s-navym)" />
-          {/* V-neck collar */}
-          <polygon points="46,66 56,82 66,66"
-            fill="var(--s-white)" stroke="var(--s-outline)" strokeWidth="2.5" />
-          {/* undershirt visible at collar */}
-          <polygon points="49,66 56,78 63,66" fill="var(--s-white)" />
+          {/* ── BAT (only visible in batting stance) ── */}
+          <g id="ace-bat">
+            {/* handle */}
+            <rect x="106" y="20" width="9" height="52" rx="3" fill="#8b4513" stroke="var(--k)" strokeWidth="2.5" />
+            {/* barrel */}
+            <rect x="102" y="8" width="17" height="20" rx="5" fill="#a0522d" stroke="var(--k)" strokeWidth="2.5" />
+            {/* grip tape */}
+            <rect x="107" y="54" width="7" height="6" rx="1" fill="#2a2a2a" />
+            <rect x="107" y="62" width="7" height="4" rx="1" fill="#2a2a2a" />
+          </g>
+
+          {/* ── TORSO / JERSEY — WIDE barrel chest ── */}
+          {/* main body: 84px wide at shoulders, SNES-style boxy */}
+          <polygon points="14,66 104,66 100,120 18,120"
+            fill="var(--nv)" stroke="var(--k)" strokeWidth="3" />
+          {/* chest mid panel */}
+          <polygon points="26,68 90,68 86,112 32,112"
+            fill="var(--nm)" />
+          {/* jersey pinstripe — classic look */}
+          <line x1="58" y1="72" x2="56" y2="112" stroke="var(--wh)" strokeWidth="1.5" opacity="0.2" />
+          {/* V-neck collar — wide */}
+          <polygon points="44,66 58,86 72,66"
+            fill="var(--wh)" stroke="var(--k)" strokeWidth="2.5" />
+          <polygon points="47,66 58,80 69,66" fill="var(--wh)" />
 
           {/* ── BELT ── */}
-          <rect x="26" y="118" width="64" height="9" rx="2"
-            fill="var(--s-red)" stroke="var(--s-outline)" strokeWidth="2.5" />
-          {/* buckle */}
-          <rect x="52" y="119" width="12" height="7" rx="1"
-            fill="var(--s-gold)" stroke="var(--s-outline)" strokeWidth="1.5" />
-          <rect x="55" y="121" width="6" height="3" rx="0.5" fill="var(--s-outline)" opacity="0.3" />
+          <rect x="18" y="116" width="82" height="10" rx="2"
+            fill="var(--re)" stroke="var(--k)" strokeWidth="2.5" />
+          <rect x="50" y="117" width="18" height="8" rx="2"
+            fill="var(--au)" stroke="var(--k)" strokeWidth="1.5" />
+          <rect x="54" y="119" width="10" height="4" rx="1" fill="var(--k)" opacity="0.25" />
 
-          {/* ── HEAD GROUP ── */}
+          {/* ══ HEAD GROUP ══ */}
           <g id="ace-head">
-            {/* neck */}
-            <rect x="50" y="60" width="18" height="12" rx="4"
-              fill="var(--s-skin)" stroke="var(--s-outline)" strokeWidth="2.5" />
+            {/* neck — thick and short */}
+            <rect x="44" y="58" width="28" height="14" rx="6"
+              fill="var(--sk)" stroke="var(--k)" strokeWidth="2.5" />
 
-            {/* face — slightly rightward oval */}
-            <ellipse cx="58" cy="40" rx="21" ry="23"
-              fill="var(--s-skin)" stroke="var(--s-outline)" strokeWidth="3" />
+            {/* face — BIG round head, SNES proportion */}
+            <ellipse cx="58" cy="35" rx="26" ry="30"
+              fill="var(--sk)" stroke="var(--k)" strokeWidth="3" />
 
-            {/* jaw / chin shadow */}
-            <ellipse cx="58" cy="52" rx="15" ry="11" fill="var(--s-skind)" opacity="0.28" />
+            {/* jaw / chin depth */}
+            <ellipse cx="58" cy="52" rx="20" ry="14" fill="var(--skd)" opacity="0.25" />
 
-            {/* right ear */}
-            <ellipse cx="79" cy="40" rx="4" ry="7"
-              fill="var(--s-skin)" stroke="var(--s-outline)" strokeWidth="2.5" />
-            <ellipse cx="79" cy="40" rx="2" ry="4" fill="var(--s-skind)" opacity="0.45" />
+            {/* ear — visible on right side */}
+            <ellipse cx="84" cy="35" rx="6" ry="9"
+              fill="var(--sk)" stroke="var(--k)" strokeWidth="2.5" />
+            <ellipse cx="84" cy="35" rx="3" ry="5.5" fill="var(--skd)" opacity="0.5" />
 
-            {/* eyebrows — thick pixel style */}
-            <rect x="43" y="29" width="10" height="4" rx="1.5" fill="var(--s-outline)" opacity="0.85" />
-            <rect x="59" y="29" width="10" height="4" rx="1.5" fill="var(--s-outline)" opacity="0.85" />
+            {/* eyebrows — thick pixel brows, slightly angled = determined look */}
+            <rect x="37" y="18" width="16" height="5" rx="2"
+              fill="var(--k)" transform="rotate(-4,45,20)" />
+            <rect x="57" y="18" width="16" height="5" rx="2"
+              fill="var(--k)" transform="rotate(4,65,20)" />
 
-            {/* eyes — chunky 8x8 pixel blocks */}
-            <rect x="43" y="34" width="9" height="9" rx="2" fill="var(--s-outline)" />
-            <rect x="59" y="34" width="9" height="9" rx="2" fill="var(--s-outline)" />
-            {/* eye shine */}
-            <rect x="44" y="35" width="3" height="3" rx="0.5" fill="var(--s-white)" />
-            <rect x="60" y="35" width="3" height="3" rx="0.5" fill="var(--s-white)" />
+            {/* eyes — 12×12 chunky pixel blocks */}
+            <rect x="37" y="24" width="14" height="14" rx="2" fill="var(--k)" />
+            <rect x="57" y="24" width="14" height="14" rx="2" fill="var(--k)" />
+            {/* pupils + shine */}
+            <rect x="43" y="27" width="5" height="5" rx="1" fill="var(--nm)" />
+            <rect x="63" y="27" width="5" height="5" rx="1" fill="var(--nm)" />
+            <rect x="38" y="25" width="4" height="4" rx="1" fill="var(--wh)" />
+            <rect x="58" y="25" width="4" height="4" rx="1" fill="var(--wh)" />
 
-            {/* nose — small rect */}
-            <rect x="56" y="46" width="5" height="5" rx="1.5" fill="var(--s-skind)" opacity="0.7" />
+            {/* nose — small inset shadow */}
+            <rect x="55" y="43" width="7" height="6" rx="2" fill="var(--skd)" opacity="0.7" />
 
-            {/* mouth — determined set, straight line */}
-            <path d="M47,56 L67,56"
-              stroke="var(--s-outline)" strokeWidth="3" strokeLinecap="round" />
+            {/* mouth — determined straight, slight uptick on right */}
+            <path d="M42,54 L70,54" stroke="var(--k)" strokeWidth="3.5" strokeLinecap="round" />
+            <path d="M66,54 Q70,54 72,51" stroke="var(--k)" strokeWidth="3" strokeLinecap="round" fill="none" />
 
             {/* ── CAP ── */}
             <g id="ace-cap">
-              {/* dome — main rounded shape */}
-              <ellipse cx="57" cy="24" rx="22" ry="17"
-                fill="var(--s-navy)" stroke="var(--s-outline)" strokeWidth="3" />
-              {/* dome bottom fill — flattens the ellipse base */}
-              <rect x="34" y="30" width="46" height="14" fill="var(--s-navy)" />
-              {/* cap base / sweatband line */}
-              <line x1="34" y1="42" x2="80" y2="42"
-                stroke="var(--s-outline)" strokeWidth="3" />
+              {/* dome — big round SNES cap */}
+              <ellipse cx="57" cy="18" rx="28" ry="22"
+                fill="var(--nv)" stroke="var(--k)" strokeWidth="3" />
+              {/* dome base flattener */}
+              <rect x="28" y="26" width="58" height="16" fill="var(--nv)" />
+              {/* base band line */}
+              <line x1="28" y1="42" x2="86" y2="42" stroke="var(--k)" strokeWidth="3" />
               {/* crown seam */}
-              <line x1="57" y1="8" x2="57" y2="32"
-                stroke="var(--s-navym)" strokeWidth="2" />
-              {/* cap button */}
-              <circle cx="57" cy="8" r="4.5"
-                fill="var(--s-red)" stroke="var(--s-outline)" strokeWidth="2.5" />
-              {/* brim — extends left (character faces slightly right) */}
-              <polygon points="34,38 44,34 44,42 18,42 16,49 36,49"
-                fill="var(--s-navy)" stroke="var(--s-outline)" strokeWidth="3" />
+              <line x1="57" y1="-2" x2="57" y2="30" stroke="var(--nm)" strokeWidth="2" />
+              {/* button */}
+              <circle cx="57" cy="0" r="5.5" fill="var(--re)" stroke="var(--k)" strokeWidth="2.5" />
+              {/* brim — chunky, extends LEFT, slight downward angle */}
+              <polygon points="28,38 44,30 48,42 10,42 8,52 32,52"
+                fill="var(--nv)" stroke="var(--k)" strokeWidth="3" />
               {/* brim underside shading */}
-              <polygon points="36,42 44,42 42,49 34,49" fill="var(--s-navym)" opacity="0.7" />
+              <polygon points="32,42 48,42 46,52 30,52" fill="var(--nm)" opacity="0.7" />
+              {/* brim stitching detail */}
+              <line x1="12" y1="46" x2="44" y2="44" stroke="var(--nm)" strokeWidth="1.5" opacity="0.6" />
             </g>
           </g>
 

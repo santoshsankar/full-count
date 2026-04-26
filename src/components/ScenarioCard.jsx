@@ -8,8 +8,8 @@ const TYPE_LABELS = {
 };
 
 const DIFF_LABELS = {
-  rookie: "ROOKIE",
-  pro: "PRO",
+  minors:  "MINORS",
+  pro:     "PRO",
   allstar: "ALL-STAR",
 };
 

@@ -15,9 +15,10 @@ export default function App() {
   const [runScenarios, setRunScenarios] = useState([]);
   const [summary, setSummary] = useState(null);
   const [runStartIQ, setRunStartIQ] = useState(iq);
+  const [difficulty, setDifficulty] = useState("pro");
 
   function startRun() {
-    const selected = selectRunScenarios(scenarios);
+    const selected = selectRunScenarios(scenarios, difficulty);
     setRunScenarios(selected);
     setRunStartIQ(iq);
     setScreen(SCREENS.RUN);
@@ -39,7 +40,13 @@ export default function App() {
   return (
     <div className="app-root">
       {screen === SCREENS.HOME && (
-        <HomeScreen iq={iq} history={history} onStart={startRun} />
+        <HomeScreen
+          iq={iq}
+          history={history}
+          difficulty={difficulty}
+          onDifficultyChange={setDifficulty}
+          onStart={startRun}
+        />
       )}
       {screen === SCREENS.RUN && (
         <ScenarioRun

@@ -1,18 +1,21 @@
 import AceSprite from "./AceSprite";
 
+const DIFFICULTIES = [
+  { id: "minors",  label: "MINORS",   sub: "Ages 7+",   desc: "Plain English, no jargon" },
+  { id: "pro",     label: "PRO",      sub: "Standard",  desc: "Real baseball vocabulary" },
+  { id: "allstar", label: "ALL-STAR", sub: "Expert",    desc: "Advanced strategy & leverage" },
+];
+
 function MiniBar({ delta }) {
   const pos = delta >= 0;
   return (
-    <span
-      className={`mini-bar ${pos ? "mini-bar-pos" : "mini-bar-neg"}`}
-      title={`${pos ? "+" : ""}${delta} IQ`}
-    >
+    <span className={`mini-bar ${pos ? "mini-bar-pos" : "mini-bar-neg"}`} title={`${pos ? "+" : ""}${delta} IQ`}>
       {pos ? "+" : ""}{delta}
     </span>
   );
 }
 
-export default function HomeScreen({ iq, history, onStart }) {
+export default function HomeScreen({ iq, history, difficulty, onDifficultyChange, onStart }) {
   const lastDelta = history.length > 0 ? history[0].delta : null;
   const recent = history.slice(0, 5);
 
@@ -20,18 +23,15 @@ export default function HomeScreen({ iq, history, onStart }) {
     <div className="home-screen">
       <div className="home-scanlines" />
 
-      {/* Logo */}
       <div className="home-logo-wrap">
         <h1 className="home-logo">FULL COUNT</h1>
         <p className="home-tagline">10 scenarios. Pure baseball IQ.</p>
       </div>
 
-      {/* Ace sprite */}
       <div className="home-ace">
         <AceSprite animation="idle" />
       </div>
 
-      {/* IQ Badge */}
       <div className="iq-badge-wrap">
         <div className="iq-badge">
           <span className="iq-badge-label">BASEBALL IQ</span>
@@ -44,19 +44,33 @@ export default function HomeScreen({ iq, history, onStart }) {
         )}
       </div>
 
-      {/* History mini bars */}
       {recent.length > 0 && (
         <div className="history-strip">
           <span className="history-label">LAST {recent.length}</span>
           <div className="history-bars">
-            {recent.map((r, i) => (
-              <MiniBar key={i} delta={r.delta} />
-            ))}
+            {recent.map((r, i) => <MiniBar key={i} delta={r.delta} />)}
           </div>
         </div>
       )}
 
-      {/* CTA */}
+      {/* ── Difficulty picker ── */}
+      <div className="diff-picker">
+        <div className="diff-picker-label">SELECT DIFFICULTY</div>
+        <div className="diff-picker-row">
+          {DIFFICULTIES.map((d) => (
+            <button
+              key={d.id}
+              className={`diff-btn diff-btn-${d.id} ${difficulty === d.id ? "diff-selected" : ""}`}
+              onClick={() => onDifficultyChange(d.id)}
+            >
+              <span className="diff-btn-label">{d.label}</span>
+              <span className="diff-btn-sub">{d.sub}</span>
+              <span className="diff-btn-desc">{d.desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <button className="btn-cta" onClick={onStart}>
         STEP INTO THE BOX
       </button>
