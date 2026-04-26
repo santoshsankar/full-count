@@ -391,7 +391,23 @@ body {
 }
 
 .badge-diff {
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 2px solid transparent;
+  font-weight: 600;
+}
+.badge-diff-rookie {
+  background: #2d5a27;
+  border-color: #5aaa50;
+  box-shadow: 0 0 0 1px #2d5a27, 0 0 6px rgba(90,170,80,0.4);
+}
+.badge-diff-pro {
+  background: #1a3a5c;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px #1a3a5c, 0 0 6px rgba(245,200,66,0.35);
+}
+.badge-diff-allstar {
+  background: #c41230;
+  border-color: #ff4466;
+  box-shadow: 0 0 0 1px #c41230, 0 0 8px rgba(196,18,48,0.55);
 }
 
 .badge-type {

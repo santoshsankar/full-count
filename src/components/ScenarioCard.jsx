@@ -13,11 +13,6 @@ const DIFF_LABELS = {
   allstar: "ALL-STAR",
 };
 
-const DIFF_COLORS = {
-  rookie: "#2d5a27",
-  pro: "#0d1f3c",
-  allstar: "#c41230",
-};
 
 function countLabel(balls, strikes) {
   return `${balls}-${strikes}`;
@@ -43,10 +38,7 @@ export default function ScenarioCard({ scenario }) {
     <div className="scenario-card">
       {/* Card header — foil gradient */}
       <div className="card-header">
-        <span
-          className="badge badge-diff"
-          style={{ backgroundColor: DIFF_COLORS[difficulty] }}
-        >
+        <span className={`badge badge-diff badge-diff-${difficulty}`}>
           {DIFF_LABELS[difficulty]}
         </span>
         <span className="badge badge-type">{TYPE_LABELS[type]}</span>
