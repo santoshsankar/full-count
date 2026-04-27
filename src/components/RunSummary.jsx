@@ -1,114 +1,145 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { formatDelta } from "../utils/scoring";
 
-function OdometerDigit({ value }) {
-  return (
-    <span className="odometer-digit" data-val={value}>
-      {value}
-    </span>
-  );
-}
-
-function Odometer({ value }) {
-  const digits = String(value).split("");
-  return (
-    <span className="odometer">
-      {digits.map((d, i) => (
-        <OdometerDigit key={i} value={d} />
-      ))}
-    </span>
-  );
-}
-
-export default function RunSummary({ summary, onRunItBack, onHome }) {
-  const [step, setStep] = useState(0);
-  const maxSteps = 8;
+function OdometerCount({ target, start }) {
+  const [val, setVal] = useState(start);
 
   useEffect(() => {
-    if (step >= maxSteps) return;
-    const t = setTimeout(() => setStep((s) => s + 1), 300);
+    if (val === target) return;
+    const step = target > val ? 1 : -1;
+    const speed = Math.max(20, Math.floor(800 / Math.abs(target - start)));
+    const t = setTimeout(() => setVal(v => v + step), speed);
     return () => clearTimeout(t);
-  }, [step]);
+  }, [val, target, start]);
 
-  const shareText = `Full Count · IQ ${summary.endIQ} (${summary.delta >= 0 ? "+" : ""}${summary.delta}) · ${summary.correctCount}/${summary.total} · ${summary.runsImpact >= 0 ? "+" : ""}${summary.runsImpact} runs · fullcount.app`;
+  return <span className="odometer-val">{val}</span>;
+}
 
-  function copyShare() {
+export default function RunSummary({ runData, onRunItBack, onHome }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const timers = [0, 300, 600, 900, 1200, 1500, 1800].map(
+      (ms, i) => setTimeout(() => setStep(i + 1), ms)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  if (!runData) return null;
+
+  const {
+    seed,
+    iqStart, iqEnd, iqDelta,
+    correct, total,
+    runsImpact,
+    bestDecision, worstDecision,
+  } = runData;
+
+  const runCode = (seed % 9000 + 1000).toString().padStart(4, "0");
+
+  const shareText =
+    `Full Count · Run #${runCode} · IQ ${iqEnd} (${formatDelta(iqDelta)}) · ` +
+    `${correct}/${total} decisions · ${runsImpact > 0 ? "+" : ""}${runsImpact.toFixed(1)} runs · ` +
+    `Can you beat it?`;
+
+  function handleCopy() {
     navigator.clipboard.writeText(shareText).catch(() => {});
   }
 
   return (
     <div className="run-summary">
-      {step >= 1 && (
-        <div className="summary-header animate-in">
-          <div className="summary-title">FINAL</div>
-          <div className="summary-subtitle">RUN COMPLETE</div>
+      {/* 1 — Header */}
+      <div className={`summary-section ${step >= 1 ? "summary-section--in" : ""}`}>
+        <div className="summary-header">
+          <span className="summary-header__rule" />
+          <h2 className="summary-title">FINAL</h2>
+          <span className="summary-header__rule" />
         </div>
-      )}
+      </div>
 
-      {step >= 2 && (
-        <div className="summary-iq animate-in">
-          <div className="summary-iq-label">BASEBALL IQ</div>
-          <div className="summary-iq-score">
-            <Odometer value={summary.endIQ} />
+      {/* 2 — IQ Odometer */}
+      <div className={`summary-section ${step >= 2 ? "summary-section--in" : ""}`}>
+        <div className="summary-iq">
+          <div className="summary-iq__label">BASEBALL IQ</div>
+          <div className="summary-iq__score">
+            {step >= 2
+              ? <OdometerCount target={iqEnd} start={iqStart} />
+              : <span className="odometer-val">{iqStart}</span>
+            }
           </div>
         </div>
-      )}
+      </div>
 
-      {step >= 3 && (
-        <div className="summary-delta animate-in">
-          <span className={`delta-badge ${summary.delta >= 0 ? "delta-pos" : "delta-neg"}`}>
-            {summary.delta >= 0 ? "+" : ""}{summary.delta} THIS RUN
-          </span>
+      {/* 3 — Delta */}
+      <div className={`summary-section ${step >= 3 ? "summary-section--in" : ""}`}>
+        <div
+          className="summary-delta"
+          style={{ color: iqDelta >= 0 ? "var(--px-green)" : "var(--px-red)" }}
+        >
+          {formatDelta(iqDelta)} THIS RUN
         </div>
-      )}
+      </div>
 
-      {step >= 4 && (
-        <div className="summary-stat-row animate-in">
-          <div className="summary-stat">
-            <div className="summary-stat-label">CORRECT</div>
-            <div className="summary-stat-val">{summary.correctCount} for {summary.total}</div>
-          </div>
-          <div className="summary-stat">
-            <div className="summary-stat-label">RUNS IMPACT</div>
-            <div className="summary-stat-val">
-              {summary.runsImpact >= 0 ? "+" : ""}{summary.runsImpact}
+      {/* 4 — Correct count */}
+      <div className={`summary-section ${step >= 4 ? "summary-section--in" : ""}`}>
+        <div className="summary-record">
+          {correct} FOR {total}
+        </div>
+        <div className="summary-runs" style={{ color: runsImpact >= 0 ? "var(--px-teal)" : "var(--px-red)" }}>
+          {runsImpact >= 0 ? "+" : ""}{runsImpact.toFixed(1)} RUNS {runsImpact >= 0 ? "SAVED" : "COST"}
+        </div>
+      </div>
+
+      {/* 5 — Best decision */}
+      {bestDecision && (
+        <div className={`summary-section ${step >= 5 ? "summary-section--in" : ""}`}>
+          <div className="summary-decision summary-decision--best">
+            <div className="summary-decision__label">BEST CALL</div>
+            <div className="summary-decision__text">
+              {bestDecision.scenarioText || bestDecision.explanation || "Great pitch selection"}
+            </div>
+            <div className="summary-decision__delta" style={{ color: "var(--px-green)" }}>
+              {formatDelta(bestDecision.iqDelta)} IQ
             </div>
           </div>
         </div>
       )}
 
-      {step >= 5 && summary.bestDecision && (
-        <div className="summary-decision summary-best animate-in">
-          <div className="decision-label">BEST DECISION</div>
-          <div className="decision-scenario">
-            {summary.bestDecision.scenario.prompt.slice(0, 80)}…
+      {/* 6 — Worst decision */}
+      {worstDecision && (
+        <div className={`summary-section ${step >= 6 ? "summary-section--in" : ""}`}>
+          <div className="summary-decision summary-decision--worst">
+            <div className="summary-decision__label">WORST CALL</div>
+            <div className="summary-decision__text">
+              {worstDecision.scenarioText || worstDecision.explanation || "Pitch to their strength"}
+            </div>
+            <div className="summary-decision__delta" style={{ color: "var(--px-red)" }}>
+              {formatDelta(worstDecision.iqDelta)} IQ
+            </div>
           </div>
-          <div className="decision-impact">+{summary.bestDecision.impact.toFixed(1)} runs</div>
         </div>
       )}
 
-      {step >= 6 && summary.worstDecision && (
-        <div className="summary-decision summary-worst animate-in">
-          <div className="decision-label">WORST DECISION</div>
-          <div className="decision-scenario">
-            {summary.worstDecision.scenario.prompt.slice(0, 80)}…
-          </div>
-          <div className="decision-impact">{summary.worstDecision.impact.toFixed(1)} runs</div>
+      {/* 7 — Share + run code */}
+      <div className={`summary-section ${step >= 7 ? "summary-section--in" : ""}`}>
+        <div className="summary-share px-box">
+          <div className="summary-run-code">RUN #{runCode}</div>
+          <p className="summary-share__text">{shareText}</p>
+          <button className="btn-share" onClick={handleCopy}>
+            COPY & CHALLENGE
+          </button>
         </div>
-      )}
+      </div>
 
-      {step >= 7 && (
-        <div className="summary-share animate-in">
-          <div className="share-text">{shareText}</div>
-          <button className="btn-share" onClick={copyShare}>COPY TO CLIPBOARD</button>
-        </div>
-      )}
-
-      {step >= 8 && (
-        <div className="summary-actions animate-in">
-          <button className="btn-primary" onClick={onRunItBack}>RUN IT BACK</button>
-          <button className="btn-secondary" onClick={onHome}>HOME</button>
-        </div>
-      )}
+      {/* Actions */}
+      <div className={`summary-actions ${step >= 7 ? "summary-section--in" : ""}`}>
+        <button className="btn-primary px-box" onClick={onRunItBack}>
+          RUN IT BACK
+        </button>
+        <button className="btn-secondary" onClick={onHome}>
+          HOME
+        </button>
+      </div>
     </div>
   );
 }

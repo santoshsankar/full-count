@@ -4,7 +4,11 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git checkout *)",
+      "Bash(cp -r /Users/santoshsankar/Documents/santosh/projects/full-count/src/components /Users/santoshsankar/Documents/santosh/projects/full-count/src/legacy/)",
+      "Bash(cp -r /Users/santoshsankar/Documents/santosh/projects/full-count/src/data /Users/santoshsankar/Documents/santosh/projects/full-count/src/legacy/)",
+      "Bash(cp -r /Users/santoshsankar/Documents/santosh/projects/full-count/src/utils /Users/santoshsankar/Documents/santosh/projects/full-count/src/legacy/)"
     ]
   }
 }

@@ -1,48 +1,67 @@
 import { useEffect, useState } from "react";
+import { formatDelta } from "../utils/scoring";
 
-export default function FeedbackPanel({ scenario, choiceId, iqDelta, streak, onNext }) {
-  const isCorrect = choiceId === scenario.correctAnswerId;
-  const [showNext, setShowNext] = useState(false);
+const VERDICT_LABEL = {
+  GREAT_CALL:   "GREAT CALL",
+  GOOD_READ:    "GOOD READ",
+  WRONG_CALL:   "WRONG CALL",
+  GOT_LUCKY:    "GOT LUCKY",
+  // pitching tiers
+  EXPLOITS_WEAKNESS:    "GREAT CALL",
+  NEUTRAL:              "GOOD READ",
+  PITCHING_TO_STRENGTH: "WRONG CALL",
+  MISTAKE_PITCH:        "WRONG CALL",
+};
+
+export default function FeedbackPanel({ verdict, iqDelta, explanation, streak, onNext, isLucky }) {
+  const [showExplain, setShowExplain] = useState(false);
+  const [showNext, setShowNext]       = useState(false);
+  const [visible, setVisible]         = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowNext(true), 800);
-    return () => clearTimeout(timer);
+    const t0 = setTimeout(() => setVisible(true), 50);
+    const t1 = setTimeout(() => setShowExplain(true), 600);
+    const t2 = setTimeout(() => setShowNext(true),    800);
+    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
-  const explanation = isCorrect ? scenario.explanationCorrect : scenario.explanationWrong;
-  const correctText = scenario.choices.find((c) => c.id === scenario.correctAnswerId)?.text;
+  const label = isLucky ? "GOT LUCKY" : (VERDICT_LABEL[verdict] || verdict || "GOOD READ");
+  const isGood = iqDelta > 0;
+  const borderColor = isGood ? "var(--px-green)" : "var(--px-red)";
 
   return (
-    <div className={`feedback-panel feedback-${isCorrect ? "correct" : "wrong"}`}>
-      <div className="feedback-verdict">
-        {isCorrect ? (
-          <span className="verdict-correct">GOOD READ</span>
-        ) : (
-          <span className="verdict-wrong">WRONG CALL</span>
-        )}
-        <span className={`iq-delta ${iqDelta >= 0 ? "delta-pos" : "delta-neg"}`}>
-          {iqDelta >= 0 ? "+" : ""}{iqDelta} IQ
+    <div
+      className={`feedback-panel ${visible ? "feedback-panel--visible" : ""}`}
+      style={{ borderTopColor: borderColor }}
+    >
+      <div className="feedback-panel__top">
+        <span
+          className="feedback-panel__verdict"
+          style={{ color: isGood ? "var(--px-green)" : "var(--px-red)" }}
+        >
+          {label}
+        </span>
+        <span
+          className="feedback-panel__iq"
+          style={{ color: isGood ? "var(--px-gold)" : "var(--px-red)" }}
+        >
+          {formatDelta(iqDelta)} IQ
         </span>
       </div>
 
-      {!isCorrect && (
-        <div className="feedback-correct-answer">
-          <span className="correct-label">CORRECT CALL:</span>
-          <span className="correct-text">{correctText}</span>
+      {showExplain && (
+        <p className="feedback-panel__explain">{explanation}</p>
+      )}
+
+      {showExplain && streak >= 2 && (
+        <div className="feedback-panel__streak">
+          🔥 {streak} IN A ROW
         </div>
       )}
 
-      <p className="feedback-explanation">{explanation}</p>
-
-      {streak >= 3 && isCorrect && (
-        <div className="streak-badge">
-          🔥 {streak} IN A ROW — +2 IQ BONUS
-        </div>
-      )}
-
-      <div className={`next-btn-wrap ${showNext ? "next-visible" : ""}`}>
-        <button className="btn-next" onClick={onNext}>
-          NEXT SCENARIO →
+      <div className={`feedback-panel__next-wrap ${showNext ? "feedback-panel__next-wrap--visible" : ""}`}>
+        <button className="btn-next px-box" onClick={onNext}>
+          NEXT —
         </button>
       </div>
     </div>

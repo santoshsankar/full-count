@@ -1,65 +1,56 @@
 import { useState } from "react";
-import HomeScreen from "./components/HomeScreen";
-import ScenarioRun from "./components/ScenarioRun";
-import RunSummary from "./components/RunSummary";
-import scenarios from "./data/scenarios";
-import { loadIQ, saveIQ, loadHistory, saveRunToHistory, selectRunScenarios } from "./utils/scoring";
-import "./App.css";
+import HomeScreen   from "./components/HomeScreen";
+import AtBatScreen  from "./components/AtBatScreen";
+import RunSummary   from "./components/RunSummary";
+import { loadIQ, saveIQ, loadHistory, saveRun } from "./utils/storage";
+import "./index.css";
 
-const SCREENS = { HOME: "home", RUN: "run", SUMMARY: "summary" };
+const VIEWS = { HOME: "home", GAME: "game", SUMMARY: "summary" };
 
 export default function App() {
-  const [screen, setScreen] = useState(SCREENS.HOME);
-  const [iq, setIQ] = useState(loadIQ);
+  const [view,    setView]    = useState(VIEWS.HOME);
+  const [iq,      setIQ]      = useState(loadIQ);
   const [history, setHistory] = useState(loadHistory);
-  const [runScenarios, setRunScenarios] = useState([]);
-  const [summary, setSummary] = useState(null);
-  const [runStartIQ, setRunStartIQ] = useState(iq);
-  const [difficulty, setDifficulty] = useState("pro");
+  const [runData, setRunData] = useState(null);
 
   function startRun() {
-    const selected = selectRunScenarios(scenarios, difficulty);
-    setRunScenarios(selected);
-    setRunStartIQ(iq);
-    setScreen(SCREENS.RUN);
+    setView(VIEWS.GAME);
   }
 
-  function handleRunComplete(runSummary, finalIQ) {
+  function endRun(summary, finalIQ) {
     saveIQ(finalIQ);
-    saveRunToHistory(runSummary);
+    saveRun(summary);
     setIQ(finalIQ);
     setHistory(loadHistory());
-    setSummary(runSummary);
-    setScreen(SCREENS.SUMMARY);
+    setRunData(summary);
+    setView(VIEWS.SUMMARY);
   }
 
-  function handleHome() {
-    setScreen(SCREENS.HOME);
+  function goHome() {
+    setView(VIEWS.HOME);
   }
 
   return (
-    <div className="app-root">
-      {screen === SCREENS.HOME && (
+    <div className="app-root scanlines crt-vignette">
+      {view === VIEWS.HOME && (
         <HomeScreen
           iq={iq}
           history={history}
-          difficulty={difficulty}
-          onDifficultyChange={setDifficulty}
           onStart={startRun}
         />
       )}
-      {screen === SCREENS.RUN && (
-        <ScenarioRun
-          scenarios={runScenarios}
-          startIQ={runStartIQ}
-          onComplete={handleRunComplete}
+      {view === VIEWS.GAME && (
+        <AtBatScreen
+          initialIQ={iq}
+          difficulty="pro"
+          onComplete={endRun}
         />
       )}
-      {screen === SCREENS.SUMMARY && summary && (
+      {view === VIEWS.SUMMARY && runData && (
         <RunSummary
-          summary={summary}
+          runData={runData}
           onRunItBack={startRun}
-          onHome={handleHome}
+          onHome={goHome}
         />
       )}
     </div>
