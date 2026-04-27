@@ -45,15 +45,15 @@ export function selectRunScenarios(allScenarios, difficulty = "pro") {
   const allstar = shuffle(allScenarios.filter((s) => s.difficulty === "allstar"));
 
   if (difficulty === "minors") {
-    // All 9 minors + 1 pro for a taste of the next level
-    return [...minors, ...pro.slice(0, 1)];
+    // 9 minors (shuffled) + 1 pro for a taste of the next level
+    return shuffle([...minors, ...pro.slice(0, 1)]);
   }
   if (difficulty === "allstar") {
-    // All 7 all-star + 3 pro to fill out the 10
-    return [...shuffle([...pro.slice(0, 3), ...allstar])];
+    // Escalate: 3 shuffled Pro first (warm-up), then 7 shuffled All-Star
+    return [...pro.slice(0, 3), ...allstar];
   }
-  // Pro: full 10 pro scenarios
-  return pro.slice(0, 10);
+  // Pro: 10 shuffled pro scenarios
+  return shuffle(pro.slice(0, 10));
 }
 
 function shuffle(arr) {

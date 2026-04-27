@@ -48,6 +48,15 @@ body {
   background: var(--navy);
   color: var(--chalk);
   min-height: 100dvh;
+  /* pixel art stadium atmosphere — dark night game sky */
+  background-image:
+    /* stadium lights top-left and top-right */
+    radial-gradient(ellipse at 12% 8%,  rgba(245,200,66,0.07) 0%, transparent 32%),
+    radial-gradient(ellipse at 88% 8%,  rgba(245,200,66,0.07) 0%, transparent 32%),
+    /* green field glow from below */
+    radial-gradient(ellipse at 50% 105%, rgba(45,90,39,0.18) 0%, transparent 45%),
+    /* subtle pixel checkerboard dither in the dark sky zone (like stadium shadow) */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect x='0' y='0' width='2' height='2' fill='rgba(255,255,255,0.012)'/%3E%3Crect x='2' y='2' width='2' height='2' fill='rgba(255,255,255,0.012)'/%3E%3C/svg%3E");
 }
 
 #root {
@@ -156,26 +165,48 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--cream);
+  /* pixel art scoreboard — dark with gold LED glow, like the stadium jumbotron */
+  background: #090f1e;
   border: 3px solid var(--gold);
-  box-shadow: var(--card-shadow);
+  box-shadow:
+    0 0 0 1px rgba(245,200,66,0.3),
+    0 0 12px rgba(245,200,66,0.2),
+    4px 4px 0px var(--navy);
   padding: 10px 24px;
-  border-radius: 3px;
+  border-radius: 2px;
+  /* dither row on top edge — like a pixel scoreboard header */
+  position: relative;
+  overflow: hidden;
+}
+
+.iq-badge::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--gold) 0px, var(--gold) 4px,
+    transparent 4px, transparent 8px
+  );
+  opacity: 0.7;
 }
 
 .iq-badge-label {
   font-family: var(--font-pixel);
-  font-size: 8px;
-  color: var(--navy);
+  font-size: 7px;
+  color: var(--gold);
   letter-spacing: 1px;
   text-transform: uppercase;
+  opacity: 0.85;
 }
 
 .iq-badge-score {
   font-family: var(--font-display);
-  font-size: 42px;
-  color: var(--navy);
+  font-size: 46px;
+  color: var(--gold);
   line-height: 1;
+  text-shadow: 0 0 10px rgba(245,200,66,0.5);
 }
 
 .last-delta {
@@ -858,24 +889,29 @@ body {
   color: var(--gold);
   letter-spacing: 4px;
   line-height: 1;
+  /* clip digits so the roll-from-below stays contained */
+  overflow: hidden;
+  padding-bottom: 4px;
 }
 
 .odometer-digit {
   display: inline-block;
-  animation: digitRoll 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--i, 0) * 80ms);
+  /* roll up from below like a mechanical flip counter */
+  animation: digitRoll 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes digitRoll {
-  from { opacity: 0; transform: translateY(-20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  0%   { transform: translateY(100%); opacity: 0; }
+  50%  { opacity: 1; }
+  85%  { transform: translateY(-6%); }
+  100% { transform: translateY(0); opacity: 1; }
 }
 
-/* Force staggered animation on digits */
-.odometer-digit:nth-child(1) { animation-delay: 0ms; }
-.odometer-digit:nth-child(2) { animation-delay: 80ms; }
-.odometer-digit:nth-child(3) { animation-delay: 160ms; }
-.odometer-digit:nth-child(4) { animation-delay: 240ms; }
+/* stagger each digit — last digit (ones place) fires first, like a real odometer */
+.odometer-digit:nth-child(1) { animation-delay: 200ms; }
+.odometer-digit:nth-child(2) { animation-delay: 100ms; }
+.odometer-digit:nth-child(3) { animation-delay: 0ms; }
+.odometer-digit:nth-child(4) { animation-delay: 0ms; }
 
 .summary-delta {
   text-align: center;

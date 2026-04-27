@@ -74,7 +74,7 @@ export default function AceSprite({ animation = "idle", size = 120 }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-label="The Ace — fictional pitcher mascot"
         shapeRendering="crispEdges"
-        style={{ overflow: "visible", display: "block" }}
+        style={{ overflow: "visible", display: "block", imageRendering: "pixelated" }}
       >
         {/* ── ground shadow ── */}
         <ellipse cx="58" cy="177" rx="32" ry="6" fill="rgba(0,0,0,0.22)" />
