@@ -109,7 +109,7 @@ export default function HomeScreen({
       <div className="home-content">
         <div className="home-logo-wrap">
           <h1 className="home-logo">FULL COUNT</h1>
-          <p className="home-tagline">10 SCENARIOS. PURE BASEBALL IQ.</p>
+          <p className="home-tagline">6 AT-BATS. PURE BASEBALL IQ.</p>
         </div>
 
         <div className="home-ace">

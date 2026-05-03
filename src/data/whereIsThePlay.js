@@ -49,7 +49,7 @@ export const whereIsThePlay = [
     id: "wtp-r3",
     difficulty: "rookie",
     type: "defense",
-    runnerRequirements: { anyRunner: true },
+    runnerRequirements: { first: true, second: true, third: true },
     situation: "Bases loaded, one out. The batter hits a sharp ground ball right to the shortstop.",
     prompt: "What's the easiest out the shortstop should go for?",
     choices: [
@@ -211,7 +211,7 @@ export const whereIsThePlay = [
     id: "wtp-p6",
     difficulty: "pro",
     type: "defense",
-    runnerRequirements: { anyRunner: true },
+    runnerRequirements: { first: true, second: true, third: true },
     situation: "Bases loaded, one out. The infield is playing back (regular depth). The batter hits a medium-pace ground ball to the third baseman.",
     prompt: "Third baseman fields it cleanly. Where's the play?",
     choices: [
@@ -315,7 +315,7 @@ export const whereIsThePlay = [
     id: "wtp-r6",
     difficulty: "rookie",
     type: "defense",
-    runnerRequirements: { anyRunner: true },
+    runnerRequirements: { second: true },
     situation: "Runner on second base. The batter hits a slow ground ball to the third baseman. The third baseman charges and fields it near the foul line.",
     prompt: "The runner on second is already at third and may try to score. Where does the third baseman throw?",
     choices: [
@@ -467,7 +467,7 @@ export const whereIsThePlay = [
     id: "wtp-p10",
     difficulty: "pro",
     type: "defense",
-    runnerRequirements: { anyRunner: true },
+    runnerRequirements: { first: true, third: true },
     situation: "Runners on first and third, one out. The batter hits a sharp grounder to the second baseman. The runner on third breaks on contact.",
     prompt: "Second baseman has a clean field. Can start a 4-6-3 double play OR throw home. What's the right call?",
     choices: [
@@ -595,5 +595,43 @@ export const whereIsThePlay = [
     iqDeltaWrong: -5,
     explanationCorrect: "Get in a rundown — intentionally. The shortstop is throwing to second to double off that runner. If you stop between the bases, the shortstop can't throw to second AND chase you at the same time. You become a decoy: the shortstop must deal with you first, giving the runner on second time to retreat safely. You'll be out, but you've traded yourself to save the other runner. One out for one out — net zero, inning still alive.",
     explanationWrong: "Sprinting back to first seems right but here's the problem: the shortstop throws to second (two outs), the second baseman fires to first to get you returning (three outs, inning over on a line drive). The smart play is creating a rundown that occupies the shortstop long enough for the runner on second to get back. Sacrifice yourself to save the other runner and keep the inning alive."
+  },
+  {
+    id: "wtp-r11",
+    difficulty: "rookie",
+    type: "defense",
+    runnerRequirements: null,
+    situation: "Bases empty, one out. The batter hits a sharp ground ball to the shortstop.",
+    prompt: "The shortstop fields it cleanly. Where does he throw?",
+    choices: [
+      { id: "a", text: "Throw to first base for the out" },
+      { id: "b", text: "Throw to second base" },
+      { id: "c", text: "Throw to third base" },
+      { id: "d", text: "Hold the ball — nobody is on base" }
+    ],
+    correctAnswerId: "a",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect: "Throw to first. Bases are empty so there are no runners to worry about — just get the batter out. First base is always the default throw on a ground ball with nobody on. Simple, clean, one out.",
+    explanationWrong: "With bases empty the only play is getting the batter out at first. There are no runners to hold or force anywhere else. When in doubt on a ground ball with nobody on, throw to first — it's the most fundamental play in baseball."
+  },
+  {
+    id: "wtp-r12",
+    difficulty: "rookie",
+    type: "baserunning",
+    runnerRequirements: null,
+    situation: "Bases empty, nobody out. You hit a single to left field. The left fielder fields it cleanly and you round first base.",
+    prompt: "The left fielder has an average arm and is 180 feet away. You have good speed. Do you try to stretch it into a double?",
+    choices: [
+      { id: "a", text: "Yes — go for second, you have the speed" },
+      { id: "b", text: "No — take the single, don't risk the out" },
+      { id: "c", text: "Only go if the left fielder bobbles it" },
+      { id: "d", text: "Stop at first and wait for the next batter" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect: "Take the single. Nobody out, nobody on — a runner on first with nobody out is a good situation. Stretching a single into a double with an average-armed outfielder fielding cleanly is a close play at best. Getting thrown out with nobody out wastes the whole at-bat. Take first and let your teammates drive you in.",
+    explanationWrong: "Speed is tempting but getting thrown out trying to stretch a single with nobody out is one of the worst outs in baseball — you used up an entire at-bat and have nothing to show for it. With nobody out and nobody on, a runner on first is valuable. Take the base you earned."
   }
 ];
