@@ -183,33 +183,74 @@ function normalize(weights) {
   return weights.map(o => ({ result: o.result, weight: Math.max(0, o.weight / total) }));
 }
 
-// Build 2-sentence plain-English explanation
-function buildExplanation(tier, pitch, location, batter, outcome) {
-  const locLabel = location === "ball" ? "off the plate" : location.replace("-", " ").replace("up", "up in the").replace("low", "down in the").replace("mid", "middle");
-  const batLabel = batter.shortName || batter.name;
+const LOC_LABELS = {
+  "up-in":      "up and in",
+  "up-middle":  "up in the zone",
+  "up-away":    "up and away",
+  "mid-in":     "in on the hands",
+  "middle":     "right down the middle",
+  "mid-away":   "on the outside corner",
+  "low-in":     "down and in",
+  "low-middle": "low in the zone",
+  "low-away":   "low and away",
+  "ball":       "way off the plate",
+};
 
-  if (tier === "EXPLOITS_WEAKNESS") {
-    if (outcome === "hard_contact") {
-      return `Good pitch — ${batLabel} got lucky that time. That ${pitch} ${locLabel} gets a swing-and-miss or weak contact 85% of the time against this hitter.`;
-    }
-    return `${pitch} ${locLabel} is exactly where ${batLabel} struggles most. Keep throwing to that spot and let the percentages work in your favor.`;
-  }
-  if (tier === "NEUTRAL") {
-    return `A ${pitch} ${locLabel} is a reasonable pitch here — no clear advantage. This hitter doesn't have a strong tendency either way in that zone.`;
-  }
-  if (tier === "PITCHING_TO_STRENGTH") {
-    return `${pitch} ${locLabel} plays right into ${batLabel}'s strengths. They're built to hit that pitch in that spot. Work the other side of the zone.`;
-  }
-  if (tier === "MISTAKE_PITCH") {
-    if (outcome === "whiff") {
-      return `You got away with it this time — but ${batLabel} crushes pitches middle-middle. That's the most hittable location in the strike zone.`;
-    }
-    return `Middle-middle against ${batLabel} is never a good idea. Any hitter with power or contact can do damage on a pitch left right down the middle.`;
-  }
-  return `${pitch} to ${locLabel} — the result is in.`;
+function locLabel(location) {
+  return LOC_LABELS[location] || location.replace("-", " ");
 }
 
-export function resolvePitch(pitch, location, batter, count, pitchHistory, rng) {
+function firstName(batter) {
+  if (!batter?.playerName) return "the hitter";
+  return batter.playerName.split(/\s+/)[0].replace(/"/g, "");
+}
+
+// Build a plain-English explanation. `perspective` is "pitching" or "batting".
+function buildExplanation(tier, pitch, location, batter, outcome, perspective = "pitching") {
+  const where = locLabel(location);
+  const name  = firstName(batter);
+  const youDid = perspective === "pitching"
+    ? `You threw a ${pitch} ${where}.`
+    : `He threw you a ${pitch} ${where}.`;
+
+  if (tier === "EXPLOITS_WEAKNESS") {
+    if (perspective === "pitching") {
+      if (outcome === "hard_contact") {
+        return `${youDid} Good pick — ${name} got lucky that time. Stay with that spot.`;
+      }
+      return `${youDid} That's exactly where ${name} struggles most. Keep going there.`;
+    }
+    return `${youDid} Smart read — that pitch in that spot is tough on hitters like you.`;
+  }
+
+  if (tier === "NEUTRAL") {
+    if (perspective === "pitching") {
+      return `${youDid} Reasonable pick — no clear advantage either way against ${name}.`;
+    }
+    return `${youDid} Fine read — neither side gained much there.`;
+  }
+
+  if (tier === "PITCHING_TO_STRENGTH") {
+    if (perspective === "pitching") {
+      return `${youDid} ${name} loves that pitch in that spot. Try working the other side of the zone next time.`;
+    }
+    return `${youDid} That's right where you like it. Good chance to do damage.`;
+  }
+
+  if (tier === "MISTAKE_PITCH") {
+    if (perspective === "pitching") {
+      if (outcome === "whiff") {
+        return `${youDid} You got away with it — middle-middle is the most hittable spot in the zone.`;
+      }
+      return `${youDid} Middle-middle is the most hittable spot in the zone. Any decent hitter punishes that.`;
+    }
+    return `${youDid} Right down the middle — that's the pitch you want.`;
+  }
+
+  return `${youDid} The result is in.`;
+}
+
+export function resolvePitch(pitch, location, batter, count, pitchHistory, rng, perspective = "pitching") {
   const tier = getMatchupTier(pitch, location, batter);
 
   let weights = [...BASE_WEIGHTS[tier]];
@@ -222,24 +263,29 @@ export function resolvePitch(pitch, location, batter, count, pitchHistory, rng) 
     ? "ball"
     : rng.weightedPick(weights);
 
+  // An in-zone pitch can never be called a ball — coerce to called_strike (batter took it)
+  if (location !== "ball" && outcome === "ball") {
+    outcome = "called_strike";
+  }
+
   const baseIQ = IQ_BY_TIER[tier];
   let iqDelta = baseIQ;
   let isLucky = false;
-  let isMistake = false;
 
+  // Pitcher made a great call but the hitter squared it up anyway — soften the IQ hit
   if (tier === "EXPLOITS_WEAKNESS" && outcome === "hard_contact") {
     iqDelta = 3;
-    isLucky = false;
   }
-  if (tier === "MISTAKE_PITCH" && (outcome === "whiff" || outcome === "foul")) {
+  // Pitcher made a mistake (middle-middle) but got away with it — flag as lucky and soften
+  if (tier === "MISTAKE_PITCH" && (outcome === "whiff" || outcome === "foul" || outcome === "called_strike")) {
     iqDelta = -4;
-    isMistake = true;
+    isLucky = true;
   }
 
   const runsImpact = iqDelta * 0.1;
-  const explanation = buildExplanation(tier, pitch, location, batter, outcome);
+  const explanation = buildExplanation(tier, pitch, location, batter, outcome, perspective);
 
-  return { outcome, matchupTier: tier, iqDelta, runsImpact, explanation, isLucky, isMistake };
+  return { outcome, matchupTier: tier, iqDelta, runsImpact, explanation, isLucky };
 }
 
 // Parse "Pitch-location" countLogic string
@@ -286,6 +332,33 @@ export function getCPUPitch(pitcher, count, rng) {
   }
 
   return parsed;
+}
+
+// Plain-English explanation for a batting decision
+export function buildBattingExplanation(verdict, decision, pitch, location, pitcher) {
+  const where = LOC_LABELS[location] || location;
+  const pitcherFirst = pitcher?.playerName?.split(/\s+/)[0]?.replace(/"/g, "") || "the pitcher";
+  const inZone = location !== "ball";
+
+  if (verdict === "GREAT_SWING") {
+    return `${pitcherFirst} threw a ${pitch} ${where}. You read it perfectly — that was the pitch to attack.`;
+  }
+  if (verdict === "GOOD_SWING") {
+    return `${pitcherFirst} threw a ${pitch} ${where}. That was a strike — swinging is a fine call.`;
+  }
+  if (verdict === "GOOD_TAKE") {
+    return `${pitcherFirst} threw a ${pitch} ${where}. Smart take — that pitch was not a strike.`;
+  }
+  if (verdict === "BAD_TAKE") {
+    return `${pitcherFirst} threw a ${pitch} ${where}. That was a strike worth swinging at — you let it go.`;
+  }
+  if (verdict === "BAD_SWING") {
+    return `${pitcherFirst} threw a ${pitch} ${where}. You swung at a pitch off the plate — hard to drive.`;
+  }
+  if (verdict === "TERRIBLE_SWING") {
+    return `${pitcherFirst} threw a ${pitch} ${where}. You chased a pitch way out of the zone — easy out.`;
+  }
+  return `${pitcherFirst} threw a ${pitch} ${where}. ${decision === "swing" ? "You swung." : "You took it."}`;
 }
 
 // IQ delta for batting-mode decisions

@@ -1,17 +1,18 @@
 export const batters = [
   {
     id: "power-chaser",
-    name: "Power Bat, Chases Away",
-    shortName: "POWER BAT",
+    playerName: "Marcus \"Mash\" Reyes",
+    archetype: "Power Hitter",
+    blurb: "Big swings. Big misses. Loves the long ball.",
     contact: 4, power: 9, discipline: 3, speed: 3,
     tendencies: [
-      "Crushes mistakes middle-middle",
-      "Chases breaking balls off the plate",
-      "Pull hitter, hits it hard when he connects"
+      "Crushes mistakes over the heart of the plate",
+      "Chases breaking balls off the outside corner",
+      "Pulls the ball when he connects"
     ],
     weaknesses: [
-      "Slider low and away",
-      "Gets himself out"
+      "Sliders down and away",
+      "Talks himself into bad swings"
     ],
     zoneWeakness: "away",
     pullTendency: "pull",
@@ -19,16 +20,17 @@ export const batters = [
   },
   {
     id: "contact-machine",
-    name: "Contact Machine, Sprays It Everywhere",
-    shortName: "CONTACT MACHINE",
+    playerName: "Eli Tanaka",
+    archetype: "Contact Specialist",
+    blurb: "Almost never strikes out. Hits it where they ain't.",
     contact: 9, power: 3, discipline: 7, speed: 7,
     tendencies: [
       "Rarely strikes out",
-      "Hits it where it's pitched",
-      "Dangerous with two strikes"
+      "Hits the ball where it's pitched",
+      "Tougher to retire with two strikes"
     ],
     weaknesses: [
-      "Power pitching up in the zone",
+      "Hard fastballs up at the letters",
       "Rarely hits for extra bases"
     ],
     zoneWeakness: "high",
@@ -37,17 +39,18 @@ export const batters = [
   },
   {
     id: "disciplined-walker",
-    name: "Disciplined Walker, Works The Count",
-    shortName: "PATIENT EYE",
+    playerName: "Walt Pemberton",
+    archetype: "Patient Hitter",
+    blurb: "Has the best eye in the league. Will take ball four every time.",
     contact: 7, power: 5, discipline: 10, speed: 5,
     tendencies: [
-      "Will take ball four every time",
-      "Battles deep into counts",
-      "Makes you throw strikes"
+      "Takes ball four every chance he gets",
+      "Battles deep into the count",
+      "Forces you to throw strikes"
     ],
     weaknesses: [
-      "Gets behind 0-2 early",
-      "Can be too passive with runners on"
+      "Can fall behind 0-2 if you steal a strike early",
+      "Sometimes too passive with runners on base"
     ],
     zoneWeakness: "low",
     pullTendency: "spray",
@@ -55,16 +58,17 @@ export const batters = [
   },
   {
     id: "aggressive-hacker",
-    name: "Aggressive Hacker, First Pitch Swinger",
-    shortName: "FIRST HACKER",
+    playerName: "Jake \"Hacks\" Donovan",
+    archetype: "Aggressive Swinger",
+    blurb: "Swings at the first decent pitch he sees.",
     contact: 6, power: 7, discipline: 2, speed: 5,
     tendencies: [
       "Swings at the first hittable pitch",
-      "Rarely sees pitch three",
+      "Rarely sees a third pitch",
       "Easy to get ahead of in the count"
     ],
     weaknesses: [
-      "Anything off-speed after a fastball",
+      "Off-speed after seeing fastballs",
       "Pitchers who work fast"
     ],
     zoneWeakness: "breaking",
@@ -73,17 +77,18 @@ export const batters = [
   },
   {
     id: "high-average",
-    name: "High Average, Line Drive Hitter",
-    shortName: "LINE DRIVE",
+    playerName: "Ricky Vargas",
+    archetype: "Line-Drive Hitter",
+    blurb: "Pure hitter. Sprays line drives gap to gap.",
     contact: 8, power: 6, discipline: 8, speed: 6,
     tendencies: [
       "Hits line drives to all fields",
-      "Rarely chases bad pitches",
-      "Most dangerous in hitter's counts"
+      "Doesn't chase bad pitches",
+      "Most dangerous when he's ahead in the count"
     ],
     weaknesses: [
-      "Elevated fastball when behind in count",
-      "No obvious weakness — must mix well"
+      "Elevated fastballs when he's behind",
+      "No glaring weakness — you have to mix pitches"
     ],
     zoneWeakness: "high",
     pullTendency: "spray",
@@ -91,17 +96,18 @@ export const batters = [
   },
   {
     id: "streaky-slugger",
-    name: "Streaky Slugger, All Or Nothing",
-    shortName: "SLUGGER",
+    playerName: "Big Tony Russo",
+    archetype: "All-or-Nothing Slugger",
+    blurb: "Either hits it 450 feet or strikes out swinging.",
     contact: 4, power: 10, discipline: 4, speed: 3,
     tendencies: [
-      "Either hits it 450 feet or strikes out",
+      "Home run or strikeout — not much in between",
       "Sells out for the pull side",
-      "Counts matter — dangerous 2-0 and 3-1"
+      "Most dangerous on hitter's counts (2-0, 3-1)"
     ],
     weaknesses: [
-      "Breaking ball down",
-      "Soft stuff after hard stuff"
+      "Breaking ball below the knees",
+      "Soft stuff after a steady diet of fastballs"
     ],
     zoneWeakness: "low",
     pullTendency: "pull",
@@ -109,17 +115,18 @@ export const batters = [
   },
   {
     id: "slap-run",
-    name: "Slap And Run, Bunts For Hits",
-    shortName: "SLAP HITTER",
+    playerName: "Donny \"Speed\" Cole",
+    archetype: "Speedster",
+    blurb: "Slaps it on the ground and beats out throws.",
     contact: 8, power: 1, discipline: 6, speed: 10,
     tendencies: [
-      "Tries to slap it past the infield",
-      "Threat to bunt any time",
-      "Speed makes routine plays into hits"
+      "Tries to slap the ball past the infield",
+      "Threat to bunt at any time",
+      "Speed turns routine plays into hits"
     ],
     weaknesses: [
-      "Hard stuff in, can't pull it",
-      "Shift takes away his lane"
+      "Hard fastballs in on his hands",
+      "The shift takes away his soft single"
     ],
     zoneWeakness: "inside",
     pullTendency: "opposite",
@@ -127,17 +134,18 @@ export const batters = [
   },
   {
     id: "dead-pull",
-    name: "Dead Pull Hitter, Shift Magnet",
-    shortName: "PULL HITTER",
+    playerName: "Hank Mathers",
+    archetype: "Pull Hitter",
+    blurb: "Yanks everything to the pull side. Predictable, but punishes mistakes.",
     contact: 6, power: 8, discipline: 5, speed: 4,
     tendencies: [
-      "Everything goes to the pull side",
-      "Predictable but hard to stop",
-      "Loves middle-in pitches"
+      "Hits everything to the pull side",
+      "Predictable but hard to stop when locked in",
+      "Loves pitches over the inner half"
     ],
     weaknesses: [
-      "Soft stuff away",
-      "Anything that breaks off the plate outside"
+      "Soft stuff on the outer half",
+      "Anything that breaks off the outside corner"
     ],
     zoneWeakness: "away",
     pullTendency: "pull",
@@ -145,17 +153,18 @@ export const batters = [
   },
   {
     id: "patient-veteran",
-    name: "Patient Veteran, Two-Strike Approach",
-    shortName: "VETERAN",
+    playerName: "Old Pete Bishop",
+    archetype: "Veteran Hitter",
+    blurb: "Shortens up with two strikes. Fouls off everything until he gets his pitch.",
     contact: 8, power: 5, discipline: 9, speed: 4,
     tendencies: [
-      "Shortens swing with two strikes",
+      "Shortens his swing with two strikes",
       "Fouls off tough pitches",
-      "Gets better as the at-bat goes longer"
+      "Gets dangerous as the at-bat goes longer"
     ],
     weaknesses: [
-      "Jump ahead 0-2 early",
-      "Loses some power protecting the plate"
+      "Falling behind early at 0-2",
+      "Loses some power when protecting the plate"
     ],
     zoneWeakness: "inside",
     pullTendency: "spray",
@@ -163,16 +172,17 @@ export const batters = [
   },
   {
     id: "free-swinger",
-    name: "Free Swinger, Expanding Zone",
-    shortName: "FREE SWINGER",
+    playerName: "Wild Mike Carrera",
+    archetype: "Free Swinger",
+    blurb: "Will swing at almost anything. Pitchers love facing him.",
     contact: 5, power: 7, discipline: 2, speed: 5,
     tendencies: [
       "Swings at pitches in the dirt",
-      "Swings at pitches above the letters",
-      "Pitchers love to face him"
+      "Swings at pitches above his shoulders",
+      "Pitchers love facing him"
     ],
     weaknesses: [
-      "Anything off the plate",
+      "Anything off the plate — he'll chase it",
       "Bouncing breaking balls"
     ],
     zoneWeakness: "low",
@@ -181,17 +191,18 @@ export const batters = [
   },
   {
     id: "gap-power",
-    name: "Gap Power, Uses The Whole Field",
-    shortName: "GAP HITTER",
+    playerName: "Andre Whitfield",
+    archetype: "Gap Hitter",
+    blurb: "Doubles to the gaps. No platoon weakness. Dangerous in any count.",
     contact: 7, power: 7, discipline: 7, speed: 6,
     tendencies: [
-      "Extra base hits to all fields",
-      "No platoon weakness",
-      "Most dangerous pitcher's count is 1-1"
+      "Hits doubles to either gap",
+      "No real platoon weakness",
+      "Most dangerous on a 1-1 count"
     ],
     weaknesses: [
-      "Elevated fastball up and in",
-      "No easy pitch — must locate perfectly"
+      "Elevated fastballs up and in",
+      "No easy out — you have to locate every pitch"
     ],
     zoneWeakness: "high",
     pullTendency: "spray",
@@ -199,17 +210,18 @@ export const batters = [
   },
   {
     id: "lefty-masher",
-    name: "Lefty Masher, Struggles Same Side",
-    shortName: "LEFTY MASHER",
+    playerName: "Lefty Dolan",
+    archetype: "Platoon Slugger",
+    blurb: "Wears out right-handed pitchers. Lefty breaking balls give him trouble.",
     contact: 7, power: 8, discipline: 6, speed: 5,
     tendencies: [
       "Destroys right-handed pitching",
-      "Breaking balls from lefties give him trouble",
-      "Pull power against righties"
+      "Has trouble with breaking balls from lefties",
+      "Pull-side power against righties"
     ],
     weaknesses: [
-      "Breaking ball from same-side pitcher",
-      "Sweeping curves that start at the body"
+      "Breaking balls from same-side pitchers",
+      "Sweeping curves that start at his body"
     ],
     zoneWeakness: "breaking",
     pullTendency: "pull",

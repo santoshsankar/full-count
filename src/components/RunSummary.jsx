@@ -32,6 +32,7 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
     iqStart, iqEnd, iqDelta,
     correct, total,
     runsImpact,
+    finalScore,
     bestDecision, worstDecision,
   } = runData;
 
@@ -88,6 +89,25 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
         <div className="summary-runs" style={{ color: runsImpact >= 0 ? "var(--px-teal)" : "var(--px-red)" }}>
           {runsImpact >= 0 ? "+" : ""}{runsImpact.toFixed(1)} RUNS {runsImpact >= 0 ? "SAVED" : "COST"}
         </div>
+        {finalScore && (
+          <div className="summary-scoreboard">
+            <div className={`summary-scoreboard__row ${finalScore.home > finalScore.away ? "summary-scoreboard__row--win" : ""}`}>
+              <span className="summary-scoreboard__label">HOME</span>
+              <span className="summary-scoreboard__num">{finalScore.home}</span>
+            </div>
+            <div className={`summary-scoreboard__row ${finalScore.away > finalScore.home ? "summary-scoreboard__row--win" : ""}`}>
+              <span className="summary-scoreboard__label">AWAY</span>
+              <span className="summary-scoreboard__num">{finalScore.away}</span>
+            </div>
+            <div className="summary-scoreboard__verdict">
+              {finalScore.home > finalScore.away
+                ? "FINAL — HOME WINS"
+                : finalScore.away > finalScore.home
+                  ? "FINAL — AWAY WINS"
+                  : "FINAL — TIED"}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 5 — Best decision */}

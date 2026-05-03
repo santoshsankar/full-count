@@ -11,9 +11,19 @@ const VERDICT_LABEL = {
   NEUTRAL:              "GOOD READ",
   PITCHING_TO_STRENGTH: "WRONG CALL",
   MISTAKE_PITCH:        "WRONG CALL",
+  // batting verdicts
+  GREAT_SWING:    "GREAT CALL",
+  GOOD_SWING:     "GOOD READ",
+  GOOD_TAKE:      "GOOD EYE",
+  BAD_TAKE:       "TOOK A STRIKE",
+  BAD_SWING:      "BAD SWING",
+  TERRIBLE_SWING: "CHASED IT",
 };
 
-export default function FeedbackPanel({ verdict, iqDelta, explanation, streak, onNext, isLucky }) {
+export default function FeedbackPanel({
+  verdict, iqDelta, explanation, streak, onNext, isLucky,
+  headline = "", nextLabel = "NEXT —",
+}) {
   const [showExplain, setShowExplain] = useState(false);
   const [showNext, setShowNext]       = useState(false);
   const [visible, setVisible]         = useState(false);
@@ -21,7 +31,7 @@ export default function FeedbackPanel({ verdict, iqDelta, explanation, streak, o
   useEffect(() => {
     const t0 = setTimeout(() => setVisible(true), 50);
     const t1 = setTimeout(() => setShowExplain(true), 600);
-    const t2 = setTimeout(() => setShowNext(true),    800);
+    const t2 = setTimeout(() => setShowNext(true),    900);
     return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -34,6 +44,10 @@ export default function FeedbackPanel({ verdict, iqDelta, explanation, streak, o
       className={`feedback-panel ${visible ? "feedback-panel--visible" : ""}`}
       style={{ borderTopColor: borderColor }}
     >
+      {headline && (
+        <div className="feedback-panel__headline">{headline}</div>
+      )}
+
       <div className="feedback-panel__top">
         <span
           className="feedback-panel__verdict"
@@ -61,7 +75,7 @@ export default function FeedbackPanel({ verdict, iqDelta, explanation, streak, o
 
       <div className={`feedback-panel__next-wrap ${showNext ? "feedback-panel__next-wrap--visible" : ""}`}>
         <button className="btn-next px-box" onClick={onNext}>
-          NEXT —
+          {nextLabel}
         </button>
       </div>
     </div>
