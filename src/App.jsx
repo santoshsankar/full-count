@@ -8,10 +8,11 @@ import "./index.css";
 const VIEWS = { HOME: "home", GAME: "game", SUMMARY: "summary" };
 
 export default function App() {
-  const [view,    setView]    = useState(VIEWS.HOME);
-  const [iq,      setIQ]      = useState(loadIQ);
-  const [history, setHistory] = useState(loadHistory);
-  const [runData, setRunData] = useState(null);
+  const [view,       setView]       = useState(VIEWS.HOME);
+  const [iq,         setIQ]         = useState(loadIQ);
+  const [history,    setHistory]    = useState(loadHistory);
+  const [runData,    setRunData]    = useState(null);
+  const [difficulty, setDifficulty] = useState("pro");
 
   function startRun() {
     setView(VIEWS.GAME);
@@ -37,12 +38,15 @@ export default function App() {
           iq={iq}
           history={history}
           onStart={startRun}
+          currentDifficulty={difficulty}
+          onDifficultyChange={setDifficulty}
         />
       )}
       {view === VIEWS.GAME && (
         <AtBatScreen
           initialIQ={iq}
-          difficulty="pro"
+          difficulty={difficulty}
+          isFirstRun={history.length === 0}
           onComplete={endRun}
         />
       )}

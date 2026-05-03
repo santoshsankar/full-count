@@ -230,8 +230,13 @@ function buildExplanation(tier, pitch, location, batter, outcome, perspective = 
     return `${youDid} Fine read — neither side gained much there.`;
   }
 
+  const pitcherFavorable = ["whiff", "foul", "called_strike", "weak_contact"].includes(outcome);
+
   if (tier === "PITCHING_TO_STRENGTH") {
     if (perspective === "pitching") {
+      if (pitcherFavorable) {
+        return `${youDid} ${name} loves that pitch in that spot — you got bailed out this time. Don't go back there.`;
+      }
       return `${youDid} ${name} loves that pitch in that spot. Try working the other side of the zone next time.`;
     }
     return `${youDid} That's right where you like it. Good chance to do damage.`;
@@ -239,8 +244,8 @@ function buildExplanation(tier, pitch, location, batter, outcome, perspective = 
 
   if (tier === "MISTAKE_PITCH") {
     if (perspective === "pitching") {
-      if (outcome === "whiff") {
-        return `${youDid} You got away with it — middle-middle is the most hittable spot in the zone.`;
+      if (pitcherFavorable) {
+        return `${youDid} You got away with it — middle-middle is the most hittable spot in the zone. Don't make a habit of it.`;
       }
       return `${youDid} Middle-middle is the most hittable spot in the zone. Any decent hitter punishes that.`;
     }
@@ -272,12 +277,21 @@ export function resolvePitch(pitch, location, batter, count, pitchHistory, rng, 
   let iqDelta = baseIQ;
   let isLucky = false;
 
+  const pitcherFavorable =
+    outcome === "whiff" || outcome === "foul" ||
+    outcome === "called_strike" || outcome === "weak_contact";
+
   // Pitcher made a great call but the hitter squared it up anyway — soften the IQ hit
   if (tier === "EXPLOITS_WEAKNESS" && outcome === "hard_contact") {
     iqDelta = 3;
   }
-  // Pitcher made a mistake (middle-middle) but got away with it — flag as lucky and soften
-  if (tier === "MISTAKE_PITCH" && (outcome === "whiff" || outcome === "foul" || outcome === "called_strike")) {
+  // Pitcher pitched into the batter's strength but got a favorable result — lucky escape
+  if (tier === "PITCHING_TO_STRENGTH" && pitcherFavorable) {
+    iqDelta = -2;
+    isLucky = true;
+  }
+  // Pitcher threw middle-middle and got away with it — bigger lucky escape
+  if (tier === "MISTAKE_PITCH" && pitcherFavorable) {
     iqDelta = -4;
     isLucky = true;
   }

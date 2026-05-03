@@ -85,7 +85,19 @@ function StadiumBG() {
   );
 }
 
-export default function HomeScreen({ iq, history, onStart }) {
+const DIFFICULTIES = [
+  { value: "rookie",  label: "ROOKIE"   },
+  { value: "pro",     label: "PRO"      },
+  { value: "allstar", label: "ALL-STAR" },
+];
+
+export default function HomeScreen({
+  iq,
+  history,
+  onStart,
+  currentDifficulty = "pro",
+  onDifficultyChange,
+}) {
   const lastRun  = history[0];
   const lastDelta = lastRun ? lastRun.iqDelta : null;
   const miniHistory = history.slice(0, 5);
@@ -129,6 +141,27 @@ export default function HomeScreen({ iq, history, onStart }) {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="home-difficulty" role="radiogroup" aria-label="Difficulty">
+          <span className="home-difficulty__label">DIFFICULTY</span>
+          <div className="home-difficulty__row">
+            {DIFFICULTIES.map(({ value, label }) => {
+              const selected = currentDifficulty === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  className={`home-difficulty__btn ${selected ? "home-difficulty__btn--selected px-box" : "px-box-inset"}`}
+                  onClick={() => onDifficultyChange && onDifficultyChange(value)}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <button className="btn-cta px-box" onClick={onStart}>

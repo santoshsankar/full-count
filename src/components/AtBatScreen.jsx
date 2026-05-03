@@ -32,15 +32,49 @@ const AT_BAT_PRESETS = [
   { runners: { first: false, second: true,  third: false }, outs: 2, blurb: "Late innings. Runner on second, two outs." },
 ];
 
-// Pick a WTP scenario by difficulty AND type (defense for pitching, baserunning for batting)
-function pickWTP(rng, difficulty, type) {
-  const byDiff = whereIsThePlay.filter(s => s.difficulty === difficulty);
-  const byType = byDiff.filter(s => s.type === type);
-  if (byType.length) return rng.pick(byType);
-  // Fall back to any same-difficulty scenario, then any scenario
-  const any = whereIsThePlay.filter(s => s.type === type);
-  if (any.length) return rng.pick(any);
-  return rng.pick(byDiff.length ? byDiff : whereIsThePlay);
+function matchesRunners(scenario, runners) {
+  const req = scenario.runnerRequirements;
+  if (!req) return true;
+  if (req.anyRunner) {
+    return runners.first || runners.second || runners.third;
+  }
+  if (req.first && !runners.first) return false;
+  if (req.second && !runners.second) return false;
+  if (req.third && !runners.third) return false;
+  return true;
+}
+
+// Pick a WTP scenario by difficulty + type + matching runner state (with cascade fallbacks)
+function pickWTP(rng, difficulty, type, runners) {
+  const pool = whereIsThePlay;
+
+  // Try: matching difficulty + type + runners
+  let candidates = pool.filter(s =>
+    s.difficulty === difficulty &&
+    s.type === type &&
+    matchesRunners(s, runners)
+  );
+  if (candidates.length) return rng.pick(candidates);
+
+  // Fallback 1: matching type + runners (any difficulty)
+  candidates = pool.filter(s =>
+    s.type === type &&
+    matchesRunners(s, runners)
+  );
+  if (candidates.length) return rng.pick(candidates);
+
+  // Fallback 2: matching difficulty + type (ignore runners)
+  candidates = pool.filter(s =>
+    s.difficulty === difficulty &&
+    s.type === type
+  );
+  if (candidates.length) return rng.pick(candidates);
+
+  // Final fallback: any scenario of matching type
+  candidates = pool.filter(s => s.type === type);
+  if (candidates.length) return rng.pick(candidates);
+
+  return rng.pick(pool);
 }
 
 const WEAKNESS_HINT = {
@@ -83,7 +117,7 @@ function buildHeadline(lastResult) {
   return PITCH_OUTCOME_HEADLINE[outcome] || "";
 }
 
-export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro" }) {
+export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro", isFirstRun = false }) {
   const seedRef = useRef(Date.now() % 100000);
   const rngRef  = useRef(new SeededRNG(seedRef.current));
 
@@ -107,6 +141,13 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro" 
   // ── UI phase ──
   const [phase, setPhase] = useState("intro"); // intro|selecting|animating|feedback|wtp-intro|wtp
   const [aceAnim,setAceAnim] = useState("idle");
+
+  // ── First-run onboarding (only on the very first run, gated by localStorage) ──
+  const [onboardStep, setOnboardStep] = useState(() => {
+    if (typeof window === "undefined") return "done";
+    const alreadyOnboarded = window.localStorage.getItem("fullcount_onboarded") === "1";
+    return isFirstRun && !alreadyOnboarded ? "pitch" : "done";
+  });
 
   // ── Pitching mode ──
   const [selZone,  setSelZone]  = useState(null);
@@ -220,7 +261,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro" 
         playInfo.play !== "home_run"
       ) {
         const wtpType = mode === "pitching" ? "defense" : "baserunning";
-        const wtp = pickWTP(rngRef.current, difficulty, wtpType);
+        const wtp = pickWTP(rngRef.current, difficulty, wtpType, runners);
         setWTPScenario(wtp);
         setWTPSelected(null);
         setWTPRevealed(false);
@@ -327,7 +368,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro" 
         playInfo.play !== "home_run"
       ) {
         const wtpType = mode === "pitching" ? "defense" : "baserunning";
-        const wtp = pickWTP(rngRef.current, difficulty, wtpType);
+        const wtp = pickWTP(rngRef.current, difficulty, wtpType, runners);
         setWTPScenario(wtp);
         setWTPSelected(null);
         setWTPRevealed(false);
@@ -447,7 +488,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro" 
   function endRun(finalABIndex) {
     const finalIQ = iq;
     const correct = allResults.filter(r =>
-      ["EXPLOITS_WEAKNESS", "NEUTRAL", "GREAT_SWING", "GOOD_SWING", "GOOD_TAKE"].includes(r.verdict)
+      ["EXPLOITS_WEAKNESS", "GREAT_SWING", "GOOD_SWING", "GOOD_TAKE"].includes(r.verdict)
     ).length;
 
     const runsImpact = allResults.reduce((sum, r) => sum + (r.iqDelta || 0) * 0.1, 0);
@@ -496,9 +537,31 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro" 
   const pitchTypes = currentPitcher?.arsenal || ["Fastball"];
   const pitchHeadline = buildHeadline(lastResult);
 
+  // Onboarding overlays sit in front of the normal "intro" overlay on the first at-bat
+  const showOnboardPitch = phase === "intro" && atBatIndex === 0 && onboardStep === "pitch";
+  const showOnboardBat   = phase === "intro" && atBatIndex === 0 && onboardStep === "bat";
+  const showAtBatIntro   = phase === "intro" && !showOnboardPitch && !showOnboardBat;
+
   return (
     <div className="atbat-screen">
-      {phase === "intro" && (
+      {showOnboardPitch && (
+        <PhaseIntro
+          variant="onboard-pitch"
+          autoDismissMs={0}
+          onDone={() => setOnboardStep("bat")}
+        />
+      )}
+      {showOnboardBat && (
+        <PhaseIntro
+          variant="onboard-bat"
+          autoDismissMs={0}
+          onDone={() => {
+            try { window.localStorage.setItem("fullcount_onboarded", "1"); } catch (e) { /* ignore */ }
+            setOnboardStep("done");
+          }}
+        />
+      )}
+      {showAtBatIntro && (
         <PhaseIntro
           variant={mode}
           blurb={AT_BAT_PRESETS[atBatIndex]?.blurb}

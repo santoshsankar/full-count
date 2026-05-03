@@ -25,6 +25,20 @@ const VARIANTS = {
     subtitle: "You put the ball in play. Now your runners have a decision to make.",
     accent: "var(--px-teal)",
   },
+  "onboard-pitch": {
+    eyebrow: "WELCOME TO FULL COUNT",
+    title: "HOW TO PITCH",
+    subtitle: "Pick a spot in the 3×3 zone. Pick your pitch type. Press THROW IT. The batter card shows you where he's weak — exploit it.",
+    accent: "var(--px-red)",
+    cta: "GOT IT →",
+  },
+  "onboard-bat": {
+    eyebrow: "ONE MORE THING",
+    title: "HOW TO HIT",
+    subtitle: "Watch where the pitch lands in the zone grid. SWING if it's a strike worth attacking. TAKE if it's a ball or in a bad spot.",
+    accent: "var(--px-gold)",
+    cta: "LET'S PLAY →",
+  },
 };
 
 export default function PhaseIntro({ variant, onDone, autoDismissMs = 6000, blurb }) {
@@ -66,7 +80,7 @@ export default function PhaseIntro({ variant, onDone, autoDismissMs = 6000, blur
           disabled={!tappable}
           style={{ borderColor: v.accent, color: v.accent }}
         >
-          TAP TO CONTINUE  ▸
+          {v.cta || "TAP TO CONTINUE  ▸"}
         </button>
       </div>
     </div>

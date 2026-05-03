@@ -1,4 +1,6 @@
-// 15 Where's The Play situations — 5 rookie, 6 pro, 4 allstar
+// 30 Where's The Play situations
+// Existing 15: 5 rookie + 6 pro + 4 allstar
+// New 15: 5 rookie + 6 pro + 4 allstar (matches the original mix)
 
 export const whereIsThePlay = [
   // ── ROOKIE (5) ──────────────────────────────────────────────
@@ -7,6 +9,7 @@ export const whereIsThePlay = [
     id: "wtp-r1",
     difficulty: "rookie",
     type: "defense",
+    runnerRequirements: { first: true },
     situation: "Runner on first base. The batter hits a fly ball to right field. The right fielder catches it for the first out.",
     prompt: "The runner on first takes off. Where does the right fielder throw?",
     choices: [
@@ -26,6 +29,7 @@ export const whereIsThePlay = [
     id: "wtp-r2",
     difficulty: "rookie",
     type: "baserunning",
+    runnerRequirements: { third: true },
     situation: "You're on third base with one out. The batter hits a deep fly ball to left field. The left fielder is drifting back to catch it.",
     prompt: "Do you tag up and try to score after the catch?",
     choices: [
@@ -45,6 +49,7 @@ export const whereIsThePlay = [
     id: "wtp-r3",
     difficulty: "rookie",
     type: "defense",
+    runnerRequirements: { anyRunner: true },
     situation: "Bases loaded, one out. The batter hits a sharp ground ball right to the shortstop.",
     prompt: "What's the easiest out the shortstop should go for?",
     choices: [
@@ -64,6 +69,7 @@ export const whereIsThePlay = [
     id: "wtp-r4",
     difficulty: "rookie",
     type: "baserunning",
+    runnerRequirements: { first: true },
     situation: "You're on first base. The batter hits a ground ball to the second baseman.",
     prompt: "What do you do?",
     choices: [
@@ -83,6 +89,7 @@ export const whereIsThePlay = [
     id: "wtp-r5",
     difficulty: "rookie",
     type: "defense",
+    runnerRequirements: { second: true },
     situation: "Runner on second base. The batter hits a single to center field. The runner on second is running hard and rounds third.",
     prompt: "The center fielder has the ball. The runner is deciding whether to score. What should the center fielder do?",
     choices: [
@@ -104,6 +111,7 @@ export const whereIsThePlay = [
     id: "wtp-p1",
     difficulty: "pro",
     type: "defense",
+    runnerRequirements: { first: true },
     situation: "Runner on first, two outs. The batter hits a rocket into the right-center gap. The runner on first is off with the pitch and running hard.",
     prompt: "The right fielder runs it down in the gap. The runner will easily score — you're trying to limit damage. Where does the right fielder throw?",
     choices: [
@@ -123,6 +131,7 @@ export const whereIsThePlay = [
     id: "wtp-p2",
     difficulty: "pro",
     type: "baserunning",
+    runnerRequirements: { third: true },
     situation: "First and third, one out. A fly ball is hit to shallow right field. The right fielder is charging hard and will barely catch it.",
     prompt: "You're the runner on third. Do you tag and try to score?",
     choices: [
@@ -142,6 +151,7 @@ export const whereIsThePlay = [
     id: "wtp-p3",
     difficulty: "pro",
     type: "baserunning",
+    runnerRequirements: { second: true },
     situation: "You're on second base, one out. The batter hits a ground ball to the first baseman who is playing behind the bag.",
     prompt: "The first baseman fields it cleanly. Do you advance to third?",
     choices: [
@@ -161,6 +171,7 @@ export const whereIsThePlay = [
     id: "wtp-p4",
     difficulty: "pro",
     type: "defense",
+    runnerRequirements: { second: true },
     situation: "Runner on second, two outs. The batter hits a sharp single to right field. The runner on second rounds third and the third base coach waves him home.",
     prompt: "Right fielder has the ball 150 feet from home plate. Strong-armed outfielder. What's the play?",
     choices: [
@@ -180,6 +191,7 @@ export const whereIsThePlay = [
     id: "wtp-p5",
     difficulty: "pro",
     type: "baserunning",
+    runnerRequirements: { first: true },
     situation: "You're the runner on first with nobody out. The batter hits a double-play ground ball — right at the shortstop, who fields it perfectly and is about to flip to second.",
     prompt: "You're running hard to second. The second baseman is about to catch the flip. What do you do?",
     choices: [
@@ -199,6 +211,7 @@ export const whereIsThePlay = [
     id: "wtp-p6",
     difficulty: "pro",
     type: "defense",
+    runnerRequirements: { anyRunner: true },
     situation: "Bases loaded, one out. The infield is playing back (regular depth). The batter hits a medium-pace ground ball to the third baseman.",
     prompt: "Third baseman fields it cleanly. Where's the play?",
     choices: [
@@ -220,6 +233,7 @@ export const whereIsThePlay = [
     id: "wtp-a1",
     difficulty: "allstar",
     type: "defense",
+    runnerRequirements: { third: true },
     situation: "Tie game, bottom of the 9th. Runner on third, one out. Infield drawn in. The batter hits a slow chopper directly at the pitcher, who fields it 45 feet from home.",
     prompt: "Pitcher has the ball. Runner on third is breaking home. What's the play?",
     choices: [
@@ -239,6 +253,7 @@ export const whereIsThePlay = [
     id: "wtp-a2",
     difficulty: "allstar",
     type: "defense",
+    runnerRequirements: { first: true },
     situation: "Runner on first, nobody out. The batter hits a rocket into the left-center gap — clearly a double. The runner on first is fast and rounds second. Your left fielder hits the cutoff man (second baseman) in shallow left-center.",
     prompt: "Cutoff man has the ball. Runner from first is at third and stopping. Batter rounds first and takes a turn. What's the call?",
     choices: [
@@ -258,6 +273,7 @@ export const whereIsThePlay = [
     id: "wtp-a3",
     difficulty: "allstar",
     type: "baserunning",
+    runnerRequirements: { third: true },
     situation: "Bottom of the 8th, tied game. You're on third base with one out. The batter squares to bunt — it's a suicide squeeze. The pitcher sees it early and bounces the pitch in the dirt two feet in front of the plate.",
     prompt: "You broke from third the moment the pitcher started his motion. The ball is in the dirt. Do you go?",
     choices: [
@@ -277,6 +293,7 @@ export const whereIsThePlay = [
     id: "wtp-a4",
     difficulty: "allstar",
     type: "baserunning",
+    runnerRequirements: { first: true, second: true },
     situation: "Two outs, runners on first and second. Full count on the batter. Both runners are going on the pitch — it's a 'full count, two outs' situation where you run automatically.",
     prompt: "The pitcher delivers. The batter takes the pitch. The home plate umpire calls... ball four. Walk. What do you do as the runner on second?",
     choices: [
@@ -290,5 +307,293 @@ export const whereIsThePlay = [
     iqDeltaWrong: -5,
     explanationCorrect: "Score! On a 3-2 count with two outs, both runners go on the pitch automatically. When ball four is called, the batter is awarded first base — but you were already running with the pitch. The force play doesn't apply to YOUR run; you were stealing. The catcher has to throw to third to get you, and there's no reason to stop. Run through third and score.",
     explanationWrong: "This is one of the most misunderstood rules in baseball. Yes, a walk normally forces runners only one base. But you broke on the pitch — you were running with the delivery on a two-out, full count. You're not advancing on the walk, you were stealing. The walk just means the catcher won't throw down. There's nobody to stop you from scoring."
+  },
+
+  // ── NEW SCENARIOS (15) ──────────────────────────────────────────
+
+  {
+    id: "wtp-r6",
+    difficulty: "rookie",
+    type: "defense",
+    runnerRequirements: { anyRunner: true },
+    situation: "Runner on second base. The batter hits a slow ground ball to the third baseman. The third baseman charges and fields it near the foul line.",
+    prompt: "The runner on second is already at third and may try to score. Where does the third baseman throw?",
+    choices: [
+      { id: "a", text: "Throw home to try to get the runner scoring" },
+      { id: "b", text: "Throw to first base for the sure out" },
+      { id: "c", text: "Run toward home and try to tag the runner" },
+      { id: "d", text: "Hold the ball — no play is available" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect: "Take the sure out at first. The runner from second was already moving and will score — there's nothing you can do about that. A throw home from the third base line is a difficult angle and likely arrives too late. Take the guaranteed out at first and keep the inning manageable.",
+    explanationWrong: "When a runner is already past third and heading home on a slow grounder, the throw home is almost always too late. The third baseman has to field, set, and throw a long distance at a tough angle. The sure play is always first base. A guaranteed out is better than no outs."
+  },
+  {
+    id: "wtp-r7",
+    difficulty: "rookie",
+    type: "baserunning",
+    runnerRequirements: { second: true },
+    situation: "You're on second base with two outs. The batter hits a ground ball right at the shortstop. The shortstop fields it cleanly.",
+    prompt: "Do you run to third?",
+    choices: [
+      { id: "a", text: "Yes — run hard, maybe you beat the throw" },
+      { id: "b", text: "No — hold at second, the shortstop can easily throw to third" },
+      { id: "c", text: "Run halfway and see what the shortstop does" },
+      { id: "d", text: "Run only if the shortstop bobbles the ball" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect: "Hold at second. The shortstop fielded it cleanly and is already facing your direction — a throw to third is short and easy. With two outs, you'd be thrown out to end the inning. Stay put and let the batter try to get a hit.",
+    explanationWrong: "Running on a cleanly fielded ball to the left side with two outs is one of the most common baserunning mistakes. The shortstop is already facing third base — it's a 30-foot throw. You'd be out by a mile and end the inning. With two outs, your job is to stay alive and let the batter work."
+  },
+  {
+    id: "wtp-r8",
+    difficulty: "rookie",
+    type: "defense",
+    runnerRequirements: { first: true },
+    situation: "Runner on first base, nobody out. The batter hits a high pop-up in foul territory near first base. The first baseman catches it for the first out.",
+    prompt: "The runner on first tagged up and is trying to advance to second. What does the first baseman do?",
+    choices: [
+      { id: "a", text: "Throw to second base immediately after the catch" },
+      { id: "b", text: "Hold the ball — no throw is needed" },
+      { id: "c", text: "Throw to the pitcher" },
+      { id: "d", text: "Run toward the runner to make a tag" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect: "Hold the ball. Technically a runner can tag up after any caught fly ball — but advancing on a foul pop-up right next to the first baseman is never worth it. Smart runners don't try this. No throw needed — hold the ball and get ready for the next pitch.",
+    explanationWrong: "This is a trick situation. A runner can technically tag up after a foul pop, but no smart runner on first is going anywhere when the first baseman caught it just a few feet away. There's no play to make. Throwing creates the risk of a wild throw giving the runner a free base."
+  },
+  {
+    id: "wtp-r9",
+    difficulty: "rookie",
+    type: "baserunning",
+    runnerRequirements: { first: true },
+    situation: "You're on first base, one out. The batter hits a line drive right at the second baseman. The second baseman catches it in the air.",
+    prompt: "You were running when the ball was hit. What do you do?",
+    choices: [
+      { id: "a", text: "Keep running to second — you're already halfway there" },
+      { id: "b", text: "Stop and go back to first as fast as you can" },
+      { id: "c", text: "Stop between the bases and wait" },
+      { id: "d", text: "Slide into second" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect: "Get back to first immediately! The second baseman caught the ball in the air for an out. If you're not touching first base, they can throw to first and double you off for the second out. Sprint back as fast as you can.",
+    explanationWrong: "When a line drive is caught, any runner who left their base is in danger of being doubled off. If you keep running to second, the second baseman just throws to first — you're doubled off for an easy double play. Always get back to your base when a line drive is caught in the air."
+  },
+  {
+    id: "wtp-r10",
+    difficulty: "rookie",
+    type: "defense",
+    runnerRequirements: { third: true },
+    situation: "Runner on third, two outs. The batter hits a weak ground ball to the pitcher on the mound.",
+    prompt: "The runner on third breaks for home. What does the pitcher do?",
+    choices: [
+      { id: "a", text: "Throw home to get the runner" },
+      { id: "b", text: "Throw to first base for the sure out" },
+      { id: "c", text: "Run at the runner to get them in a rundown" },
+      { id: "d", text: "Throw to third base" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect: "Throw to first. Two outs means getting the batter out ends the inning — the run doesn't count if the third out is made before the runner touches home. Throw to first, get the easy out, inning over. No run scores.",
+    explanationWrong: "With two outs, the run only counts if it scores BEFORE the third out is recorded. If the pitcher gets the batter at first, the inning ends and the runner's score doesn't count. Always take the sure out at first with two outs. The run is irrelevant if you get the out."
+  },
+  {
+    id: "wtp-p7",
+    difficulty: "pro",
+    type: "baserunning",
+    runnerRequirements: { first: true },
+    situation: "Runner on first, nobody out. The batter hits a sharp single to left field. You're rounding second at full speed. The left fielder fields the ball cleanly on one hop.",
+    prompt: "Third base coach is waving you through. Left fielder has a below-average arm. Do you try to score?",
+    choices: [
+      { id: "a", text: "Yes — below-average arm, go for it" },
+      { id: "b", text: "No — stop at third, nobody out is too valuable to risk" },
+      { id: "c", text: "Hesitate at third and only go if the throw is offline" },
+      { id: "d", text: "Go only if you have elite speed" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: "Stop at third. Nobody out with a runner on third is an excellent position — you'll likely score on a fly ball, ground ball, or wild pitch. A below-average arm doesn't guarantee a score, and getting thrown out at home with nobody out kills a big inning. Take the gift of third base.",
+    explanationWrong: "A below-average arm is tempting, but with nobody out, getting thrown out at home ends a big inning opportunity. Third base with nobody out scores on almost any contact. Smart baserunning is knowing when NOT to be aggressive — the risk-reward doesn't justify it here."
+  },
+  {
+    id: "wtp-p8",
+    difficulty: "pro",
+    type: "defense",
+    runnerRequirements: { second: true },
+    situation: "Runner on second, nobody out. The batter bunts toward the first base line. The pitcher charges and fields it near the line, 20 feet from home.",
+    prompt: "The runner from second is already rounding third. Pitcher fields it cleanly. Where's the throw?",
+    choices: [
+      { id: "a", text: "Throw to first — take the sure out" },
+      { id: "b", text: "Throw home — you're only 20 feet away, you have a play" },
+      { id: "c", text: "Fake home and throw to third to trap the runner" },
+      { id: "d", text: "Throw to second to hold the batter at first" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: "Throw home. The whole point of the sacrifice bunt is to trade an out for an advanced runner — but if the pitcher is only 20 feet away and the runner is still moving, you have a real play at the plate. A short accurate throw home turns the bunt into a failed play. Take the aggressive call.",
+    explanationWrong: "This is exactly the situation where you challenge the bunt. The runner gave up their lead rounding third, and you're only 20 feet from home — not a full 60-foot throw. Taking first gives the other team exactly what they wanted. If you have the play, make it."
+  },
+  {
+    id: "wtp-p9",
+    difficulty: "pro",
+    type: "baserunning",
+    runnerRequirements: { second: true },
+    situation: "Runner on second, two outs, down by one in the 8th inning. The batter hits a single to right field. The right fielder has an above-average arm and fields it on one hop.",
+    prompt: "You're the runner on second. Third base coach is holding you. Do you go?",
+    choices: [
+      { id: "a", text: "Hold — trust the coach, strong arm in right" },
+      { id: "b", text: "Go — you need to score, you're down by one" },
+      { id: "c", text: "Go — two outs means you run on contact automatically" },
+      { id: "d", text: "Go only if you had a big lead off second" }
+    ],
+    correctAnswerId: "c",
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: "Go — two outs means you run on contact automatically. With two outs you don't wait for the coach's signal; you run the moment the ball is hit. You should already be at full speed rounding third. The right fielder's arm doesn't matter if you got a good jump on contact.",
+    explanationWrong: "Two outs changes everything in baserunning. With two outs you run on any hit — you don't wait for the coach. There's no 'setting up' for the next batter when two outs means the at-bat ends on the next out anyway. Two outs means you're moving. This is one of the most important baserunning rules in baseball."
+  },
+  {
+    id: "wtp-p10",
+    difficulty: "pro",
+    type: "defense",
+    runnerRequirements: { anyRunner: true },
+    situation: "Runners on first and third, one out. The batter hits a sharp grounder to the second baseman. The runner on third breaks on contact.",
+    prompt: "Second baseman has a clean field. Can start a 4-6-3 double play OR throw home. What's the right call?",
+    choices: [
+      { id: "a", text: "Throw home — cut off the run scoring from third" },
+      { id: "b", text: "Turn the 4-6-3 double play — take two outs" },
+      { id: "c", text: "Throw to second only, don't risk the relay" },
+      { id: "d", text: "Throw to first for one sure out" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: "Turn the double play. Two outs for one run is the trade you always make. The run scores either way — the runner on third is going no matter what. But getting two outs ends the inning before any more damage. A double play is the most valuable play in baseball. Take it every time you can get it.",
+    explanationWrong: "Throwing home only gets one out and leaves runners on base with two outs instead of ending the inning. The run scores whether you throw home or complete the double play — the runner was already going. Two outs ends the threat entirely. Always take the double play when you have it."
+  },
+  {
+    id: "wtp-p11",
+    difficulty: "pro",
+    type: "baserunning",
+    runnerRequirements: { first: true },
+    situation: "Runner on first, one out. The batter hits a sinking line drive to left-center. You break on contact. The ball drops in for a hit — left fielder picks it up. You're rounding second hard.",
+    prompt: "Third base coach puts up the stop sign. Do you respect it?",
+    choices: [
+      { id: "a", text: "Yes — stop at second, trust the coach" },
+      { id: "b", text: "No — the outfielder had to run hard, keep going to third" },
+      { id: "c", text: "Stop at second and see if the outfielder throws" },
+      { id: "d", text: "Try to score — the outfielder is off balance" }
+    ],
+    correctAnswerId: "a",
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: "Respect the hold. The third base coach has the angle on the outfielder that you don't have while running blind. If he's holding you, the fielder recovered faster than it looked. Trust your coach and take second — you're in scoring position with one out.",
+    explanationWrong: "The third base coach is the one set of eyes watching the fielder while you're running with your back to the play. Ignoring the hold sends you into a throw you can't see. A runner thrown out ignoring the stop sign is an embarrassing, preventable out that kills the inning."
+  },
+  {
+    id: "wtp-p12",
+    difficulty: "pro",
+    type: "defense",
+    runnerRequirements: { third: true },
+    situation: "Runner on third, one out. Infield at normal depth. The batter hits a routine medium-pace ground ball to the third baseman.",
+    prompt: "Runner on third breaks for home on contact. Third baseman fields it cleanly. What's the right play?",
+    choices: [
+      { id: "a", text: "Throw home — you have time from third base" },
+      { id: "b", text: "Throw to first — take the sure out, run scores" },
+      { id: "c", text: "Pump fake home then throw to first" },
+      { id: "d", text: "Run at the runner to get them in a rundown" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: "Take the sure out at first. The infield is at normal depth — that trade-off is already accepted: a run scores but you get the out. The throw home from normal third base depth arrives too late and risks a wild throw for extra damage. Take first, get the out, accept the run.",
+    explanationWrong: "When the infield plays at normal depth with a runner on third, a ground ball scores the run — that's the accepted trade. Trying to throw home from regular depth usually arrives late and risks a wild throw that allows more damage. Take the sure out. One run to escape the inning is a good trade."
+  },
+  {
+    id: "wtp-a5",
+    difficulty: "allstar",
+    type: "defense",
+    runnerRequirements: { first: true },
+    situation: "Runner on first, nobody out, tie game 7th inning. Left-handed batter. First baseman holding the runner on. The batter hits a sharp one-hopper right back to the pitcher.",
+    prompt: "Pitcher fields it cleanly. Runner on first breaks immediately. What's the highest-IQ play?",
+    choices: [
+      { id: "a", text: "Throw to second for the force out" },
+      { id: "b", text: "Throw to first — easy 1-3 putout" },
+      { id: "c", text: "Throw to second, start the 1-6-3 double play" },
+      { id: "d", text: "Step toward third to freeze the runner, then throw to first" }
+    ],
+    correctAnswerId: "c",
+    iqDeltaCorrect: 8,
+    iqDeltaWrong: -5,
+    explanationCorrect: "1-6-3 double play — pitcher to shortstop covering second, relay to first. The runner held on first has almost no lead because the first baseman was holding him on. A sharp comebacker to the pitcher with a held runner is the best double play opportunity in baseball. Elite pitchers turn this automatically. Two outs, inning controlled.",
+    explanationWrong: "A sharp comebacker with a runner held on and nobody out is a double play ball — don't waste it. The runner had no lead because he was held on. Throwing to first for one out leaves a runner on base in a tie game when you could have ended the inning. The 1-6-3 is the play. Take two every time."
+  },
+  {
+    id: "wtp-a6",
+    difficulty: "allstar",
+    type: "baserunning",
+    runnerRequirements: { second: true },
+    situation: "Runner on second, nobody out, down by one in the 9th. Infield at normal depth. The batter squares to bunt — the third baseman charges hard.",
+    prompt: "The batter pulls back the bunt — it's a fake. Third baseman is now 20 feet in front of his bag. The pitch is called a ball. What do you do as the runner on second?",
+    choices: [
+      { id: "a", text: "Stay at second — it was a ball, nothing happened" },
+      { id: "b", text: "Break for third immediately — third base is unoccupied" },
+      { id: "c", text: "Break only if the catcher doesn't look at you" },
+      { id: "d", text: "Wait to see if the batter calls time" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 8,
+    iqDeltaWrong: -5,
+    explanationCorrect: "Break for third right now. The third baseman charged and is 20 feet in front of the bag — there is nobody covering third. The catcher has to throw 127 feet to a moving, empty bag. This is a designed play called a bunt-and-steal and it works because fielders forget to recover. Down a run in the 9th, third with nobody out is a potential game-tying run on any contact.",
+    explanationWrong: "When the third baseman charges hard on a bunt fake and the pitch isn't put in play, third base is empty. This is one of baseball's great heads-up plays — the defense gave you a free base. Down one in the 9th with nobody out, third base scores on a fly ball, wild pitch, passed ball, or sac fly. Don't miss this."
+  },
+  {
+    id: "wtp-a7",
+    difficulty: "allstar",
+    type: "defense",
+    runnerRequirements: { second: true },
+    situation: "Runner on second, one out, tie game 8th inning. Slow-footed runner. The batter hits a routine fly ball to medium-depth center field. Runner tags at second.",
+    prompt: "Center fielder catches it. Strong arm, medium depth. Runner tags and heads to third. Do you throw to third?",
+    choices: [
+      { id: "a", text: "Yes — strong arm, medium depth, make the throw" },
+      { id: "b", text: "No — let him have third, protect against a wild throw" },
+      { id: "c", text: "Bluff the throw to third then hold the ball" },
+      { id: "d", text: "Throw to second to hold the batter at first" }
+    ],
+    correctAnswerId: "b",
+    iqDeltaCorrect: 8,
+    iqDeltaWrong: -5,
+    explanationCorrect: "Let him take third and hold the ball. A slow runner tagging from second on a medium fly to center barely makes third — meaning a throw has almost no chance of getting there in time. More importantly, a throw that tails wide goes into the corner and scores him. In a tie game in the 8th, a wild throw loses the game. The risk of giving up the go-ahead run on a bad throw far outweighs the small chance of a putout.",
+    explanationWrong: "Strong arm is tempting — but slow runner plus medium-depth center means the runner barely makes third. Any throw that's not perfect goes into the corner and scores him in a tie game. This is elite defensive IQ: knowing when NOT to throw. Let him have third and pitch to the next situation with the lead still tied."
+  },
+  {
+    id: "wtp-a8",
+    difficulty: "allstar",
+    type: "baserunning",
+    runnerRequirements: { first: true },
+    situation: "Runners on first and second, nobody out, tie game 6th inning. You're the runner on first. The batter hits a sharp line drive directly at the shortstop — caught for out number one. Shortstop looks to second to double off the runner there.",
+    prompt: "You were running on the pitch. What's the highest-IQ play for you as the runner on first?",
+    choices: [
+      { id: "a", text: "Sprint back to first — get back before any throw comes" },
+      { id: "b", text: "Keep running to second — the shortstop is looking away" },
+      { id: "c", text: "Stop between first and second and get in a rundown intentionally" },
+      { id: "d", text: "Dive back to first" }
+    ],
+    correctAnswerId: "c",
+    iqDeltaCorrect: 8,
+    iqDeltaWrong: -5,
+    explanationCorrect: "Get in a rundown — intentionally. The shortstop is throwing to second to double off that runner. If you stop between the bases, the shortstop can't throw to second AND chase you at the same time. You become a decoy: the shortstop must deal with you first, giving the runner on second time to retreat safely. You'll be out, but you've traded yourself to save the other runner. One out for one out — net zero, inning still alive.",
+    explanationWrong: "Sprinting back to first seems right but here's the problem: the shortstop throws to second (two outs), the second baseman fires to first to get you returning (three outs, inning over on a line drive). The smart play is creating a rundown that occupies the shortstop long enough for the runner on second to get back. Sacrifice yourself to save the other runner and keep the inning alive."
   }
 ];
