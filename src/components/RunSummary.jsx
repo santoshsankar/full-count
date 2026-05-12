@@ -99,12 +99,22 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
               <span className="summary-scoreboard__label">AWAY</span>
               <span className="summary-scoreboard__num">{finalScore.away}</span>
             </div>
-            <div className="summary-scoreboard__verdict">
+            <div
+              className="summary-scoreboard__verdict"
+              style={{
+                color:
+                  finalScore.home > finalScore.away
+                    ? "var(--px-green)"
+                    : finalScore.away > finalScore.home
+                      ? "var(--px-red)"
+                      : "var(--px-gold)"
+              }}
+            >
               {finalScore.home > finalScore.away
-                ? "FINAL — HOME WINS"
+                ? "YOU WIN"
                 : finalScore.away > finalScore.home
-                  ? "FINAL — AWAY WINS"
-                  : "FINAL — TIED"}
+                  ? "YOU LOSE"
+                  : "TIE GAME"}
             </div>
           </div>
         )}

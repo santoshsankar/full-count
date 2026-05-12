@@ -23,6 +23,11 @@ const VERDICT_LABEL = {
 export default function FeedbackPanel({
   verdict, iqDelta, explanation, streak, onNext, isLucky,
   headline = "", nextLabel = "NEXT —",
+  resultLabel,            // explicit override from causal play resolution
+  playResult,             // { isOut, throwOutProb, ... } when WTP resolved a play
+  score,                  // { home, away } shown alongside playResult
+  fielderName,            // shortName of the fielder in the matchup
+  runnerName,             // shortName of the runner in the matchup
 }) {
   const [showExplain, setShowExplain] = useState(false);
   const [showNext, setShowNext]       = useState(false);
@@ -35,9 +40,17 @@ export default function FeedbackPanel({
     return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
-  const label = isLucky ? "GOT LUCKY" : (VERDICT_LABEL[verdict] || verdict || "GOOD READ");
+  const labelFromVerdict =
+    isLucky ? "GOT LUCKY" : (VERDICT_LABEL[verdict] || verdict || "GOOD READ");
+  const label = resultLabel || labelFromVerdict;
+
   const isGood = iqDelta > 0;
   const borderColor = isGood ? "var(--px-green)" : "var(--px-red)";
+
+  const hasMatchup =
+    !!playResult &&
+    typeof playResult.isOut === "boolean" &&
+    fielderName && runnerName;
 
   return (
     <div
@@ -63,6 +76,30 @@ export default function FeedbackPanel({
         </span>
       </div>
 
+      {hasMatchup && (
+        <div
+          className={`feedback-matchup ${playResult.isOut ? "feedback-matchup--out" : "feedback-matchup--safe"}`}
+        >
+          <div className="feedback-matchup__line1">
+            {fielderName} vs {runnerName}
+          </div>
+          <div className="feedback-matchup__line2">
+            {playResult.isCorrect ? "Right call" : "Wrong call"}: {playResult.throwOutProb}% throw-out
+          </div>
+          <div
+            className="feedback-matchup__line3"
+            style={{ color: playResult.isOut ? "var(--px-green)" : "var(--px-red)" }}
+          >
+            {playResult.isOut ? "✓ RUNNER OUT" : "✗ RUN SCORES"}
+            {!playResult.isOut && playResult.runsScored > 0 && (
+              <span className="feedback-matchup__runs">
+                {" "}— {playResult.runsScored} RUN{playResult.runsScored > 1 ? "S" : ""}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {showExplain && (
         <p className="feedback-panel__explain">{explanation}</p>
       )}
@@ -70,6 +107,12 @@ export default function FeedbackPanel({
       {showExplain && streak >= 2 && (
         <div className="feedback-panel__streak">
           🔥 {streak} IN A ROW
+        </div>
+      )}
+
+      {hasMatchup && score && (
+        <div className="feedback-panel__score">
+          HOME {score.home} · AWAY {score.away}
         </div>
       )}
 

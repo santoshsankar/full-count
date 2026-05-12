@@ -1111,6 +1111,49 @@ body {
   color: var(--px-teal);
   letter-spacing: 1px;
 }
+
+/* Causal matchup box */
+.feedback-matchup {
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 2px;
+  padding: 10px 12px;
+  margin: 8px 0;
+}
+.feedback-matchup--out  { border-color: var(--px-green); }
+.feedback-matchup--safe { border-color: var(--px-red);   }
+.feedback-matchup__line1 {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: var(--px-chalk-dim);
+  margin-bottom: 4px;
+}
+.feedback-matchup__line2 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--px-chalk-dim);
+  margin-bottom: 4px;
+}
+.feedback-matchup__line3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+.feedback-matchup__runs {
+  font-size: 14px;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+.feedback-panel__score {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--px-gold);
+  letter-spacing: 1px;
+  text-align: center;
+  margin: 8px 0;
+}
 .feedback-panel__next-wrap {
   opacity: 0;
   transition: opacity 200ms steps(1);
