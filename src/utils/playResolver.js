@@ -361,20 +361,20 @@ export function resolvePlayFromDecision({
   let runsScored = 0;
   let runnersAfter = { ...runners };
 
-  if (!isOut) {
-    if (runners.third)  runsScored++;
-    if (runners.second) runnersAfter.third = true;
-    if (runners.first)  runnersAfter.second = true;
-    runnersAfter.first = true;
-    runnersAfter.third = runners.second || false;
-    runnersAfter.second = runners.first || false;
-    // Re-derive cleanly
+  if (isOut) {
+    // Remove the lead advancing runner. Priority: third → second → first.
+    if (runners.third)       runnersAfter.third  = false;
+    else if (runners.second) runnersAfter.second = false;
+    else if (runners.first)  runnersAfter.first  = false;
+    runsScored = 0;
+  } else {
+    // Runner safe — advance all runners as a single
+    runsScored = runners.third ? 1 : 0;
     runnersAfter = {
       first:  true,
       second: runners.first  || false,
       third:  runners.second || false,
     };
-    runsScored = (runners.third ? 1 : 0);
   }
 
   const resultLabel =

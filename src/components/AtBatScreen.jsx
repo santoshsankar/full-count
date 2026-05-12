@@ -162,7 +162,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   const [runners,    setRunners]    = useState(INITIAL_STATE.runners);
   const [score,      setScore]      = useState({ home: 0, away: 0 });
   const [inning,     setInning]     = useState(1);
-  const [halfInning, setHalfInning] = useState("top");
   const [pitchHist,  setPitchHist]  = useState([]);
 
   // ── UI phase ──
@@ -197,6 +196,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   const [pendingWTP,     setPendingWTP]     = useState(false);
 
   const mode          = atBatIndex % 2 === 0 ? "pitching" : "batting";
+  const halfInning    = mode === "pitching" ? "top" : "bottom";
   const currentBatter = runBatters[atBatIndex]  || batters[0];
   const currentPitcher= runPitchers[atBatIndex] || pitchers[0];
   const currentFielder         = runFielders[atBatIndex] || fielders[0];
@@ -257,15 +257,15 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   }
 
   // Apply outs and roll over the half-inning if 3rd out is recorded.
+  // halfInning is derived from mode, so it advances naturally when the next
+  // at-bat flips modes. The inning number advances only when the BOTTOM half
+  // ends (i.e., the 3rd out is recorded during the player's batting at-bat).
   function recordOuts(addedOuts) {
     const newOuts = outs + addedOuts;
     if (newOuts >= 3) {
       setOuts(0);
       setRunners({ first: false, second: false, third: false });
-      if (halfInning === "top") {
-        setHalfInning("bottom");
-      } else {
-        setHalfInning("top");
+      if (mode === "batting") {
         setInning(i => i + 1);
       }
       return { rolledOver: true, newOuts: 0 };
