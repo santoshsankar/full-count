@@ -27,11 +27,19 @@ import { applyIQDelta, getStreakBonus } from "../utils/scoring";
 
 const AT_BATS = 6; // 3 pitching + 3 batting, alternating
 
-// Initial state only — runners/outs are NOT reset per at-bat anymore (continuous game state).
-const INITIAL_STATE = {
-  runners: { first: false, second: false, third: false },
-  outs:    0,
-};
+// Each at-bat is a single PA in a fresh half-inning of real baseball:
+// runners and outs RESET at the start of each at-bat. Only the score
+// carries forward. The preset table represents what your teammates
+// (or your opponents' teammates) did "off-camera" before this PA —
+// it gives every at-bat narrative stakes.
+const AT_BAT_PRESETS = [
+  { runners: { first: false, second: false, third: false }, outs: 0 },  // top of 1st
+  { runners: { first: true,  second: false, third: false }, outs: 0 },  // bot of 1st
+  { runners: { first: true,  second: true,  third: false }, outs: 1 },  // top of 2nd
+  { runners: { first: false, second: false, third: true  }, outs: 2 },  // bot of 2nd
+  { runners: { first: true,  second: true,  third: true  }, outs: 1 },  // top of 3rd
+  { runners: { first: false, second: true,  third: false }, outs: 2 },  // bot of 3rd
+];
 
 // ─── WTP filtering (static scenarios — used as fallback) ────────────
 
@@ -156,12 +164,12 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   const [allResults, setAllResults] = useState([]);
   const [iqFlash,    setIQFlash]    = useState(null);
 
-  // ── Continuous game state ──
+  // ── Game state ──
+  // Score carries across at-bats; outs and runners reset per at-bat (preset).
   const [count,      setCount]      = useState({ balls: 0, strikes: 0 });
-  const [outs,       setOuts]       = useState(INITIAL_STATE.outs);
-  const [runners,    setRunners]    = useState(INITIAL_STATE.runners);
+  const [outs,       setOuts]       = useState(AT_BAT_PRESETS[0].outs);
+  const [runners,    setRunners]    = useState(AT_BAT_PRESETS[0].runners);
   const [score,      setScore]      = useState({ home: 0, away: 0 });
-  const [inning,     setInning]     = useState(1);
   const [pitchHist,  setPitchHist]  = useState([]);
 
   // ── UI phase ──
@@ -197,6 +205,8 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
 
   const mode          = atBatIndex % 2 === 0 ? "pitching" : "batting";
   const halfInning    = mode === "pitching" ? "top" : "bottom";
+  // Inning is fully derived: at-bats 0+1 → 1st, 2+3 → 2nd, 4+5 → 3rd.
+  const inning        = Math.floor(atBatIndex / 2) + 1;
   const currentBatter = runBatters[atBatIndex]  || batters[0];
   const currentPitcher= runPitchers[atBatIndex] || pitchers[0];
   const currentFielder         = runFielders[atBatIndex] || fielders[0];
@@ -256,22 +266,11 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     return { atBatOver, contactType };
   }
 
-  // Apply outs and roll over the half-inning if 3rd out is recorded.
-  // halfInning is derived from mode, so it advances naturally when the next
-  // at-bat flips modes. The inning number advances only when the BOTTOM half
-  // ends (i.e., the 3rd out is recorded during the player's batting at-bat).
+  // Outs are tracked within the current half-inning only. Each at-bat is
+  // its own fresh half-inning (preset reset on advanceAfterAtBat), so we
+  // don't roll over runners or inning here — that happens at advance time.
   function recordOuts(addedOuts) {
-    const newOuts = outs + addedOuts;
-    if (newOuts >= 3) {
-      setOuts(0);
-      setRunners({ first: false, second: false, third: false });
-      if (mode === "batting") {
-        setInning(i => i + 1);
-      }
-      return { rolledOver: true, newOuts: 0 };
-    }
-    setOuts(newOuts);
-    return { rolledOver: false, newOuts };
+    setOuts(o => o + addedOuts);
   }
 
   function updateScore(runsScored) {
@@ -609,7 +608,8 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
       endRun(nextAB);
       return;
     }
-    // Continuous game state — runners and outs carry forward.
+    // Fresh half-inning: reset outs and runners from the preset. Score persists.
+    const preset = AT_BAT_PRESETS[nextAB] || AT_BAT_PRESETS[0];
     setAtBatIndex(nextAB);
     setAtBatEnded(false);
     setCount({ balls: 0, strikes: 0 });
@@ -620,6 +620,8 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setIncomingPitch(null);
     setZoneRevealed(false);
     setBattingReady(false);
+    setRunners(preset.runners);
+    setOuts(preset.outs);
     setPhase("intro");
   }
 
@@ -743,6 +745,9 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
       <div className="atbat-topbar">
         <div className="atbat-counter">
           AT-BAT {atBatIndex + 1} OF {AT_BATS}
+          <span className="atbat-inning">
+            {halfInning === "top" ? "TOP" : "BOT"} {ordinal(inning).toUpperCase()}
+          </span>
           <span className={`atbat-mode-badge atbat-mode-badge--${mode}`}>
             {mode.toUpperCase()}
           </span>
@@ -887,7 +892,11 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
               onNext={handleFeedbackNext}
               isLucky={lastResult.isLucky}
               headline={pitchHeadline}
-              nextLabel={pendingWTP ? "DEFENSIVE PLAY ▸" : (atBatEnded ? "NEXT AT-BAT ▸" : "NEXT PITCH ▸")}
+              nextLabel={
+                pendingWTP
+                  ? (mode === "batting" ? "ON THE BASES ▸" : "DEFENSIVE PLAY ▸")
+                  : (atBatEnded ? "NEXT AT-BAT ▸" : "NEXT PITCH ▸")
+              }
             />
           )}
 
