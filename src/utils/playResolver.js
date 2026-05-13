@@ -135,7 +135,7 @@ function generateCutoffQuestion(
         `Hit the cutoff — higher percentage every time.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction, contactType, outs
+      fielder, runner, runners, direction, contactType, outs, mode: "pitching"
     }
   };
 }
@@ -185,7 +185,7 @@ function generateAdvanceQuestion(
         `Stay at second.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction, contactType, outs
+      fielder, runner, runners, direction, contactType, outs, mode: "batting"
     }
   };
 }
@@ -225,7 +225,7 @@ function generateDPQuestion(
     isDynamic: true,
     _context: {
       fielder, runner, runners,
-      direction: "infield", contactType, outs
+      direction: "infield", contactType, outs, mode: "pitching"
     }
   };
 }
@@ -254,7 +254,161 @@ function generateInfieldQuestion(
     isDynamic: true,
     _context: {
       fielder, runner, runners,
-      direction: "infield", contactType, outs
+      direction: "infield", contactType, outs, mode: "pitching"
+    }
+  };
+}
+
+// ─── DEFENSIVE: where to throw with a runner on first only ──
+
+function generateDefenseAdvanceQuestion(
+  situation, fielder, runner, runners, outs, direction, contactType
+) {
+  return {
+    situation,
+    prompt: "Ball in play with a runner on first — where does your fielder throw?",
+    choices: [
+      { id: "a", text: "First base — get the sure out on the batter" },
+      { id: "b", text: "Second base — try to nab the lead runner" },
+      { id: "c", text: "Third base — cut off the runner's advance" },
+      { id: "d", text: "Hold the ball" }
+    ],
+    correctAnswerId: "a",
+    iqDeltaCorrect: 5,
+    iqDeltaWrong: -3,
+    explanationCorrect:
+      `Take the sure out at first. The runner from first will advance ` +
+      `to second on the play — accept that. Getting the batter is the ` +
+      `priority with two outs (or one).`,
+    explanationWrong:
+      `Trying to nab the lead runner instead of taking the batter ` +
+      `at first is a classic mistake. The runner is already moving; ` +
+      `the sure out is at first. Don't trade two outs for one.`,
+    isDynamic: true,
+    _context: {
+      fielder, runner, runners, direction, contactType, outs, mode: "pitching"
+    }
+  };
+}
+
+// ─── OFFENSIVE: stretch a hit (bases empty) ──
+
+function generateStretchQuestion(
+  situation, fielder, runner, runners, outs, direction, contactType
+) {
+  const baseProb = resolveThrowOutProb(
+    fielder, runner, "long", contactType
+  );
+  // Stretch if the fielder doesn't have the arm OR the batter has speed.
+  const shouldStretch = baseProb < 0.40 || runner.speed >= 8;
+  const correctId = shouldStretch ? "a" : "b";
+  const pct = Math.round(baseProb * 100);
+  const safePct = 100 - pct;
+
+  return {
+    situation,
+    prompt: "You hit it past the infielder — do you stretch it into a double?",
+    choices: [
+      { id: "a", text: `Yes — push for second, ${fielder.shortName} doesn't scare you` },
+      { id: "b", text: "No — take the single, get on base safely" },
+      { id: "c", text: "Only if the fielder bobbles it" },
+      { id: "d", text: "Stop halfway, read the throw" }
+    ],
+    correctAnswerId: correctId,
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: shouldStretch
+      ? `Push for second. Against ${fielder.shortName}, you're safe at ` +
+        `second ${safePct}% of the time. Take the extra base.`
+      : `Take the single. ${fielder.shortName} would throw you out at ` +
+        `second ${pct}% of the time. Don't run yourself out of the inning.`,
+    explanationWrong: shouldStretch
+      ? `Settling for a single gives up a free extra base. ${fielder.shortName} ` +
+        `didn't have the arm to stop you on a deep one.`
+      : `Trying to stretch against ${fielder.shortName} is a losing bet — ` +
+        `${pct}% throw-out chance. You earned first base; don't gift them the out.`,
+    isDynamic: true,
+    _context: {
+      fielder, runner, runners, direction, contactType, outs, mode: "batting"
+    }
+  };
+}
+
+// ─── OFFENSIVE: break up the double play (runner on 1, outs < 2) ──
+
+function generateBreakUpDPQuestion(
+  situation, fielder, runner, runners, outs, contactType
+) {
+  return {
+    situation,
+    prompt: "Ground ball with a runner on first — what's your approach as the batter?",
+    choices: [
+      { id: "a", text: "Run hard, slide aggressively at second to break up the DP" },
+      { id: "b", text: "Run easy — accept that you're out" },
+      { id: "c", text: "Slow down to see if there's a bobble" },
+      { id: "d", text: "Run wide of the baseline to confuse the fielder" }
+    ],
+    correctAnswerId: "a",
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect:
+      `Run hard. Even if you're out at first, forcing the fielder to ` +
+      `rush the throw can save your teammate's out at second. A hard ` +
+      `legal slide is the play.`,
+    explanationWrong:
+      `Slowing up on a double-play ball hands the defense the easiest ` +
+      `two outs in baseball. Run hard, slide hard, force the play — ` +
+      `that's how you keep the inning alive.`,
+    isDynamic: true,
+    _context: {
+      fielder, runner, runners, direction: "infield", contactType, outs, mode: "batting"
+    }
+  };
+}
+
+// ─── OFFENSIVE: should the lead runner try to score? ──
+
+function generateScoreFromBaseQuestion(
+  situation, fielder, runner, runners, outs, direction, contactType
+) {
+  const fromThird = !!runners.third;
+  const distance = fromThird ? "medium" : "long";
+  const baseProb = resolveThrowOutProb(
+    fielder, runner, distance, contactType
+  );
+  const shouldGo = baseProb < 0.45 || runner.aggression >= 8;
+  const correctId = shouldGo ? "a" : "b";
+  const pct = Math.round(baseProb * 100);
+  const safePct = 100 - pct;
+  const fromBase = fromThird ? "third" : "second";
+  const stayBase = fromThird ? "third" : "third"; // runner on 2nd → stops at 3rd
+
+  return {
+    situation,
+    prompt: `Runner on ${fromBase} — does he try to score on this hit?`,
+    choices: [
+      { id: "a", text: "Yes — send him home" },
+      { id: "b", text: `No — hold at ${stayBase}, don't risk the out at home` },
+      { id: "c", text: "Bluff halfway, see if the fielder throws home" },
+      { id: "d", text: "Go only if the fielder bobbles it" }
+    ],
+    correctAnswerId: correctId,
+    iqDeltaCorrect: 6,
+    iqDeltaWrong: -4,
+    explanationCorrect: shouldGo
+      ? `Send him. Against ${fielder.shortName}, ${runner.shortName} is ` +
+        `safe at home ${safePct}% of the time. Take the run.`
+      : `Hold him. ${fielder.shortName} throws ${runner.shortName} out ` +
+        `at home ${pct}% of the time. Don't trade a run for an out — ` +
+        `let the next batter drive him in.`,
+    explanationWrong: shouldGo
+      ? `Holding gives up a run that was there for the taking. ` +
+        `${runner.shortName} would have been safe ${safePct}% of the time.`
+      : `Sending him here is a low-percentage play. ${fielder.shortName} ` +
+        `throws him out ${pct}% of the time. You just traded an inning for an out.`,
+    isDynamic: true,
+    _context: {
+      fielder, runner, runners, direction, contactType, outs, mode: "batting"
     }
   };
 }
@@ -269,7 +423,8 @@ export function resolveDynamicPlay({
   runners,
   outs,
   score,
-  rng
+  rng,
+  mode = "pitching",
 }) {
   const playType = determinePlayType(
     runners, outs, contactType
@@ -287,12 +442,41 @@ export function resolveDynamicPlay({
     ? "center field"
     : "the infield";
 
-  const situation =
-    `${runnerDesc}, ${outsDesc}. ` +
-    `${contactDesc} to ${dirDesc}. ` +
-    `Your fielder: ${fielder.shortName}. ` +
-    `Runner: ${runner.shortName}.`;
+  // Perspective-aware situation framing
+  const situation = mode === "batting"
+    ? `${runnerDesc}, ${outsDesc}. ${contactDesc} to ${dirDesc}. ` +
+      `Fielder: ${fielder.shortName}. Runner: ${runner.shortName}.`
+    : `${runnerDesc}, ${outsDesc}. ${contactDesc} to ${dirDesc}. ` +
+      `Your fielder: ${fielder.shortName}. Runner: ${runner.shortName}.`;
 
+  // OFFENSIVE branch — player is at the plate / running the bases
+  if (mode === "batting") {
+    if (playType === "cutoff_decision") {
+      return generateScoreFromBaseQuestion(
+        situation, fielder, runner, runners,
+        outs, direction, contactType
+      );
+    }
+    if (playType === "double_play_read") {
+      return generateBreakUpDPQuestion(
+        situation, fielder, runner, runners,
+        outs, contactType
+      );
+    }
+    if (playType === "advance_or_hold") {
+      return generateAdvanceQuestion(
+        situation, fielder, runner, runners,
+        outs, direction, contactType
+      );
+    }
+    // infield_where (bases empty) — offensive
+    return generateStretchQuestion(
+      situation, fielder, runner, runners,
+      outs, direction, contactType
+    );
+  }
+
+  // DEFENSIVE branch — player is on the mound / in the field
   if (playType === "cutoff_decision") {
     return generateCutoffQuestion(
       situation, fielder, runner, runners,
@@ -300,7 +484,7 @@ export function resolveDynamicPlay({
     );
   }
   if (playType === "advance_or_hold") {
-    return generateAdvanceQuestion(
+    return generateDefenseAdvanceQuestion(
       situation, fielder, runner, runners,
       outs, direction, contactType
     );
@@ -311,7 +495,7 @@ export function resolveDynamicPlay({
       outs, contactType
     );
   }
-  // infield_where (bases empty)
+  // infield_where (bases empty) — defensive
   return generateInfieldQuestion(
     situation, fielder, runner, runners,
     outs, contactType
@@ -329,7 +513,8 @@ export function resolvePlayFromDecision({
   outs,
   contactType,
   direction,
-  rng
+  rng,
+  mode = "pitching",
 }) {
   const isCorrect = playerChoice === correctChoice;
 
@@ -343,21 +528,31 @@ export function resolvePlayFromDecision({
     fielder, runner, distance, contactType
   );
 
-  // Decision shifts probability ±25%
-  const adjustedProb = isCorrect
-    ? Math.min(0.90, baseProb + 0.25)
-    : Math.max(0.05, baseProb - 0.25);
+  // The "player's success probability" depends on perspective:
+  //   pitching: success = runner is out (high baseProb favors defense)
+  //   batting:  success = runner is safe (low baseProb favors offense)
+  const playerBaseSuccessProb = mode === "pitching"
+    ? baseProb
+    : (1 - baseProb);
 
-  // Seeded RNG draw
-  const isOut = rng.next() < adjustedProb;
+  // Decision quality shifts the success probability ±25%.
+  const playerAdjustedSuccessProb = isCorrect
+    ? Math.min(0.90, playerBaseSuccessProb + 0.25)
+    : Math.max(0.05, playerBaseSuccessProb - 0.25);
 
-  // IQ delta
-  const iqDelta = isCorrect && isOut   ?  8
-    : isCorrect && !isOut              ?  3
-    : !isCorrect && isOut              ? -2
-    :                                    -5;
+  // RNG draw against the player's success probability.
+  const playerSucceeded = rng.next() < playerAdjustedSuccessProb;
 
-  // Game consequence
+  // Convert back to the absolute "isOut" fact for game-state consequences.
+  const isOut = mode === "pitching" ? playerSucceeded : !playerSucceeded;
+
+  // IQ delta — keyed off whether the player got what they wanted.
+  const iqDelta = isCorrect && playerSucceeded   ?  8
+    : isCorrect && !playerSucceeded              ?  3
+    : !isCorrect && playerSucceeded              ? -2
+    :                                              -5;
+
+  // Game consequence — same in both modes (isOut is the absolute fact)
   let runsScored = 0;
   let runnersAfter = { ...runners };
 
@@ -378,24 +573,30 @@ export function resolvePlayFromDecision({
   }
 
   const resultLabel =
-    isCorrect && isOut   ? "GREAT CALL"
-    : isCorrect && !isOut  ? "GOOD CALL — TOUGH BREAK"
-    : !isCorrect && isOut  ? "GOT LUCKY"
-    :                        "WRONG CALL";
+    isCorrect && playerSucceeded   ? "GREAT CALL"
+    : isCorrect && !playerSucceeded  ? "GOOD CALL — TOUGH BREAK"
+    : !isCorrect && playerSucceeded  ? "GOT LUCKY"
+    :                                  "WRONG CALL";
 
   return {
     isOut,
+    playerSucceeded,
+    mode,
     iqDelta,
     runsScored,
     runnersAfter,
     outsAdded:    isOut ? 1 : 0,
     resultLabel,
     isCorrect,
-    isLucky:      !isCorrect && isOut,
-    isToughBreak: isCorrect && !isOut,
-    throwOutProb: Math.round(adjustedProb * 100),
-    baseThrowOutProb: Math.round(baseProb * 100),
+    isLucky:      !isCorrect && playerSucceeded,
+    isToughBreak: isCorrect && !playerSucceeded,
+    // Probabilities surfaced for UI — always expressed as PLAYER success %
+    successProb:     Math.round(playerAdjustedSuccessProb * 100),
+    baseSuccessProb: Math.round(playerBaseSuccessProb * 100),
+    // Legacy aliases (kept for backward-compat with any UI still reading them)
+    throwOutProb:    Math.round(playerAdjustedSuccessProb * 100),
+    baseThrowOutProb: Math.round(playerBaseSuccessProb * 100),
     fielderName:  fielder.shortName,
-    runnerName:   runner.shortName
+    runnerName:   runner.shortName,
   };
 }

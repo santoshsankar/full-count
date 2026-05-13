@@ -76,29 +76,52 @@ export default function FeedbackPanel({
         </span>
       </div>
 
-      {hasMatchup && (
-        <div
-          className={`feedback-matchup ${playResult.isOut ? "feedback-matchup--out" : "feedback-matchup--safe"}`}
-        >
-          <div className="feedback-matchup__line1">
-            {fielderName} vs {runnerName}
-          </div>
-          <div className="feedback-matchup__line2">
-            {playResult.isCorrect ? "Right call" : "Wrong call"}: {playResult.throwOutProb}% throw-out
-          </div>
+      {hasMatchup && (() => {
+        const isBatting = playResult.mode === "batting";
+        // From the player's perspective, "success" means the desired outcome:
+        // pitching → runner out; batting → runner safe.
+        const playerSucceeded = !!playResult.playerSucceeded;
+        const goodForPlayer = playerSucceeded;
+        const successPct = playResult.successProb ?? playResult.throwOutProb ?? 0;
+
+        let outcomeLabel;
+        if (isBatting) {
+          outcomeLabel = playResult.isOut
+            ? "✗ YOU'RE OUT"
+            : playResult.runsScored > 0
+              ? `✓ SAFE — ${playResult.runsScored} RUN${playResult.runsScored > 1 ? "S SCORE" : " SCORES"}`
+              : "✓ SAFE";
+        } else {
+          outcomeLabel = playResult.isOut
+            ? "✓ RUNNER OUT"
+            : playResult.runsScored > 0
+              ? `✗ RUN${playResult.runsScored > 1 ? "S" : ""} SCORE${playResult.runsScored > 1 ? "" : "S"}`
+              : "✗ RUNNER SAFE";
+        }
+
+        const probLine = isBatting
+          ? `${playResult.isCorrect ? "Right call" : "Wrong call"}: ${successPct}% safe`
+          : `${playResult.isCorrect ? "Right call" : "Wrong call"}: ${successPct}% throw-out`;
+
+        return (
           <div
-            className="feedback-matchup__line3"
-            style={{ color: playResult.isOut ? "var(--px-green)" : "var(--px-red)" }}
+            className={`feedback-matchup ${goodForPlayer ? "feedback-matchup--out" : "feedback-matchup--safe"}`}
           >
-            {playResult.isOut ? "✓ RUNNER OUT" : "✗ RUN SCORES"}
-            {!playResult.isOut && playResult.runsScored > 0 && (
-              <span className="feedback-matchup__runs">
-                {" "}— {playResult.runsScored} RUN{playResult.runsScored > 1 ? "S" : ""}
-              </span>
-            )}
+            <div className="feedback-matchup__line1">
+              {fielderName} vs {runnerName}
+            </div>
+            <div className="feedback-matchup__line2">
+              {probLine}
+            </div>
+            <div
+              className="feedback-matchup__line3"
+              style={{ color: goodForPlayer ? "var(--px-green)" : "var(--px-red)" }}
+            >
+              {outcomeLabel}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {showExplain && (
         <p className="feedback-panel__explain">{explanation}</p>

@@ -306,6 +306,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
         outs,
         score,
         rng: rngRef.current,
+        mode,
       });
     } catch (err) {
       console.error("resolveDynamicPlay failed — falling back to static WTP", err);
@@ -538,6 +539,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
           outs:          scenario._context.outs,
           contactType:   scenario._context.contactType,
           direction:     scenario._context.direction,
+          mode:          scenario._context.mode || mode,
           rng:           rngRef.current,
         });
 
