@@ -33,6 +33,10 @@ const TOTAL_INNINGS = 3;
 // half-innings without running out.
 const ARCHETYPE_POOL = 30;
 
+// Hard cap on PAs per half-inning. Invisible to good players (3 outs comes
+// first under normal play); catches pathological no-out half-innings.
+const MAX_PAS_PER_HALF = 6;
+
 // ─── WTP filtering (static scenarios — used as fallback) ────────────
 
 function matchesRunners(scenario, runners) {
@@ -166,6 +170,8 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   const [runners,    setRunners]    = useState({ first: false, second: false, third: false });
   const [score,      setScore]      = useState({ home: 0, away: 0 });
   const [pitchHist,  setPitchHist]  = useState([]);
+  // Tally of PAs completed in the current half-inning. Resets on flip.
+  const [halfInningPAs, setHalfInningPAs] = useState(0);
 
   // ── UI phase ──
   const [phase, setPhase] = useState("intro"); // intro|selecting|animating|feedback|wtp-intro|wtp
@@ -594,19 +600,25 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
 
   // ── Game flow ──
 
+  // A half-inning ends when 3 outs are recorded OR the 6-PA hard cap is hit.
+  function halfInningOver(currentOuts, paCount) {
+    return currentOuts >= 3 || paCount >= MAX_PAS_PER_HALF;
+  }
+
   // Returns true if game should end. Caller is responsible for calling endGame.
-  function shouldEndGame(currentOuts, currentScore) {
+  function shouldEndGame(currentOuts, currentScore, paCount) {
     // Walk-off in Bot 3rd: home pulled ahead mid-at-bat
     if (walkOffPending) return true;
     if (inning === TOTAL_INNINGS && halfInning === "bottom" && currentScore.home > currentScore.away) {
       return true;
     }
-    // End of Bot 3rd (3 outs after the bottom half of the last inning)
-    if (currentOuts >= 3 && inning === TOTAL_INNINGS && halfInning === "bottom") {
+    const halfOver = halfInningOver(currentOuts, paCount);
+    // End of Bot 3rd
+    if (halfOver && inning === TOTAL_INNINGS && halfInning === "bottom") {
       return true;
     }
     // End of Top 3rd with HOME leading → skip Bot 3rd
-    if (currentOuts >= 3 && inning === TOTAL_INNINGS && halfInning === "top" && currentScore.home > currentScore.away) {
+    if (halfOver && inning === TOTAL_INNINGS && halfInning === "top" && currentScore.home > currentScore.away) {
       return true;
     }
     return false;
@@ -614,15 +626,18 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
 
   // After any at-bat ending, decide what's next:
   //  - End game if a stop condition is met
-  //  - Flip the half-inning if 3 outs were recorded
+  //  - Flip the half-inning if 3 outs were recorded OR the PA cap was hit
   //  - Otherwise continue with the next PA in the same half-inning
   function advancePlay() {
-    if (shouldEndGame(outs, score)) {
+    const newPACount = halfInningPAs + 1;
+    setHalfInningPAs(newPACount);
+
+    if (shouldEndGame(outs, score, newPACount)) {
       endGame();
       return;
     }
 
-    if (outs >= 3) {
+    if (halfInningOver(outs, newPACount)) {
       flipHalfInning();
       return;
     }
@@ -645,6 +660,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     // Clear half-inning-scoped state
     setOuts(0);
     setRunners({ first: false, second: false, third: false });
+    setHalfInningPAs(0);
 
     if (halfInning === "top") {
       setHalfInning("bottom");
@@ -743,6 +759,8 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   }
 
   // ── Derived display values ──
+  // The current PA hasn't been counted yet (advancePlay increments on NEXT click).
+  // For label display we project: if the PA has ended, count it.
   function nextButtonLabel() {
     if (pendingWTP) {
       return mode === "batting" ? "ON THE BASES ▸" : "DEFENSIVE PLAY ▸";
@@ -750,9 +768,9 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     if (!atBatEnded && !isAtBatOver()) {
       return "NEXT PITCH ▸";
     }
-    // At-bat ended — what comes next?
-    if (shouldEndGame(outs, score)) return "FINAL ▸";
-    if (outs >= 3) {
+    const projected = halfInningPAs + 1;
+    if (shouldEndGame(outs, score, projected)) return "FINAL ▸";
+    if (halfInningOver(outs, projected)) {
       const nextHalf = halfInning === "top" ? "bottom" : "top";
       const nextInning = halfInning === "top" ? inning : inning + 1;
       return `${nextHalf === "top" ? "TOP" : "BOTTOM"} OF ${ordinal(nextInning).toUpperCase()} ▸`;
@@ -761,8 +779,9 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   }
 
   function wtpNextLabel() {
-    if (shouldEndGame(outs, score)) return "FINAL ▸";
-    if (outs >= 3) {
+    const projected = halfInningPAs + 1;
+    if (shouldEndGame(outs, score, projected)) return "FINAL ▸";
+    if (halfInningOver(outs, projected)) {
       const nextHalf = halfInning === "top" ? "bottom" : "top";
       const nextInning = halfInning === "top" ? inning : inning + 1;
       return `${nextHalf === "top" ? "TOP" : "BOTTOM"} OF ${ordinal(nextInning).toUpperCase()} ▸`;
