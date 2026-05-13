@@ -552,24 +552,53 @@ export function resolvePlayFromDecision({
     : !isCorrect && playerSucceeded              ? -2
     :                                              -5;
 
-  // Game consequence — same in both modes (isOut is the absolute fact)
+  // Game consequence — mode-aware advancement
   let runsScored = 0;
   let runnersAfter = { ...runners };
 
-  if (isOut) {
-    // Remove the lead advancing runner. Priority: third → second → first.
-    if (runners.third)       runnersAfter.third  = false;
-    else if (runners.second) runnersAfter.second = false;
-    else if (runners.first)  runnersAfter.first  = false;
-    runsScored = 0;
+  if (mode === "batting") {
+    // BATTING MODE — batter is the one running
+    if (playerSucceeded) {
+      // Batter safely stretched to second (double)
+      runnersAfter = {
+        first:  false,
+        second: true,
+        third:  runners.first || false,
+      };
+      // Runners score from second and third
+      runsScored = (runners.second ? 1 : 0)
+                 + (runners.third  ? 1 : 0);
+    } else {
+      // Batter thrown out stretching
+      runnersAfter = {
+        first:  false,
+        second: runners.first  || false,
+        third:  runners.second || false,
+      };
+      // Runner on third scores on the play
+      // even though batter is out
+      runsScored = runners.third ? 1 : 0;
+    }
   } else {
-    // Runner safe — advance all runners as a single
-    runsScored = runners.third ? 1 : 0;
-    runnersAfter = {
-      first:  true,
-      second: runners.first  || false,
-      third:  runners.second || false,
-    };
+    // PITCHING MODE — fielder throwing out a runner
+    if (playerSucceeded) {
+      // Correct defensive decision — runner thrown out
+      // Remove the lead advancing runner
+      runnersAfter = { ...runners };
+      if (runners.third)       runnersAfter.third  = false;
+      else if (runners.second) runnersAfter.second = false;
+      else if (runners.first)  runnersAfter.first  = false;
+      runsScored = 0;
+    } else {
+      // Wrong defensive decision — runner safe
+      // Advance all runners as a single
+      runnersAfter = {
+        first:  true,
+        second: runners.first  || false,
+        third:  runners.second || false,
+      };
+      runsScored = runners.third ? 1 : 0;
+    }
   }
 
   const resultLabel =
