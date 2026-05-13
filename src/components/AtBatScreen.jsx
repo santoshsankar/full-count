@@ -25,21 +25,13 @@ import {
 } from "../utils/playResolver";
 import { applyIQDelta, getStreakBonus } from "../utils/scoring";
 
-const AT_BATS = 6; // 3 pitching + 3 batting, alternating
+// Game structure: a stylized 3-inning baseball game with 6 half-innings.
+// Player is always HOME. Top half = pitching, Bottom half = batting.
+const TOTAL_INNINGS = 3;
 
-// Each at-bat is a single PA in a fresh half-inning of real baseball:
-// runners and outs RESET at the start of each at-bat. Only the score
-// carries forward. The preset table represents what your teammates
-// (or your opponents' teammates) did "off-camera" before this PA —
-// it gives every at-bat narrative stakes.
-const AT_BAT_PRESETS = [
-  { runners: { first: false, second: false, third: false }, outs: 0 },  // top of 1st
-  { runners: { first: true,  second: false, third: false }, outs: 0 },  // bot of 1st
-  { runners: { first: true,  second: true,  third: false }, outs: 1 },  // top of 2nd
-  { runners: { first: false, second: false, third: true  }, outs: 2 },  // bot of 2nd
-  { runners: { first: true,  second: true,  third: true  }, outs: 1 },  // top of 3rd
-  { runners: { first: false, second: true,  third: false }, outs: 2 },  // bot of 3rd
-];
+// Pre-pick a generous pool of archetypes so PAs can extend within long
+// half-innings without running out.
+const ARCHETYPE_POOL = 30;
 
 // ─── WTP filtering (static scenarios — used as fallback) ────────────
 
@@ -126,7 +118,6 @@ function buildRunnerDesc(runners) {
   if (runners.third)  on.push("runner on third");
   if (on.length === 0) return "Bases empty";
   if (runners.first && runners.second && runners.third) return "Bases loaded";
-  // Capitalize first label
   const joined = on.join(", ");
   return joined.charAt(0).toUpperCase() + joined.slice(1);
 }
@@ -137,25 +128,26 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-function buildAtBatBlurb(runners, outs, inning, halfInning, mode) {
+function buildHalfInningBlurb(runners, outs, inning, halfInning, mode, score) {
   const runnerDesc = buildRunnerDesc(runners);
   const outsDesc   = `${outs} out${outs !== 1 ? "s" : ""}`;
   const inningDesc = `${halfInning === "top" ? "Top" : "Bottom"} of the ${ordinal(inning)}`;
   const roleDesc   = mode === "pitching"
     ? "You're on the mound."
     : "You're at the plate.";
-  return `${inningDesc}. ${runnerDesc}. ${outsDesc}. ${roleDesc}`;
+  const scoreDesc  = `HOME ${score.home} · AWAY ${score.away}`;
+  return `${inningDesc}. ${scoreDesc}. ${runnerDesc}. ${outsDesc}. ${roleDesc}`;
 }
 
 export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro", isFirstRun = false }) {
   const seedRef = useRef(Date.now() % 100000);
   const rngRef  = useRef(new SeededRNG(seedRef.current));
 
-  // Run-level archetypes (stable across the whole run)
-  const [runBatters]           = useState(() => pickArchetypes(batters,     AT_BATS, rngRef.current));
-  const [runPitchers]          = useState(() => pickArchetypes(pitchers,    AT_BATS, rngRef.current));
-  const [runFielders]          = useState(() => pickArchetypes(fielders,    AT_BATS, rngRef.current));
-  const [runRunnerArchetypes]  = useState(() => pickArchetypes(runnersData, AT_BATS, rngRef.current));
+  // Run-level archetypes — generous pool so half-innings can extend
+  const [runBatters]           = useState(() => pickArchetypes(batters,     ARCHETYPE_POOL, rngRef.current));
+  const [runPitchers]          = useState(() => pickArchetypes(pitchers,    ARCHETYPE_POOL, rngRef.current));
+  const [runFielders]          = useState(() => pickArchetypes(fielders,    ARCHETYPE_POOL, rngRef.current));
+  const [runRunnerArchetypes]  = useState(() => pickArchetypes(runnersData, ARCHETYPE_POOL, rngRef.current));
 
   // ── Run progress ──
   const [atBatIndex, setAtBatIndex] = useState(0);
@@ -164,11 +156,14 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   const [allResults, setAllResults] = useState([]);
   const [iqFlash,    setIQFlash]    = useState(null);
 
-  // ── Game state ──
-  // Score carries across at-bats; outs and runners reset per at-bat (preset).
+  // ── Game state (real baseball) ──
+  // Top half = you pitch (away batting). Bottom half = you bat (home batting).
+  const [mode,       setMode]       = useState("pitching");
+  const [halfInning, setHalfInning] = useState("top");
+  const [inning,     setInning]     = useState(1);
   const [count,      setCount]      = useState({ balls: 0, strikes: 0 });
-  const [outs,       setOuts]       = useState(AT_BAT_PRESETS[0].outs);
-  const [runners,    setRunners]    = useState(AT_BAT_PRESETS[0].runners);
+  const [outs,       setOuts]       = useState(0);
+  const [runners,    setRunners]    = useState({ first: false, second: false, third: false });
   const [score,      setScore]      = useState({ home: 0, away: 0 });
   const [pitchHist,  setPitchHist]  = useState([]);
 
@@ -203,15 +198,14 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   const [atBatEnded,     setAtBatEnded]     = useState(false);
   const [pendingWTP,     setPendingWTP]     = useState(false);
 
-  const mode          = atBatIndex % 2 === 0 ? "pitching" : "batting";
-  const halfInning    = mode === "pitching" ? "top" : "bottom";
-  // Inning is fully derived: at-bats 0+1 → 1st, 2+3 → 2nd, 4+5 → 3rd.
-  const inning        = Math.floor(atBatIndex / 2) + 1;
-  const currentBatter = runBatters[atBatIndex]  || batters[0];
-  const currentPitcher= runPitchers[atBatIndex] || pitchers[0];
-  const currentFielder         = runFielders[atBatIndex] || fielders[0];
-  const currentRunnerArchetype = runRunnerArchetypes[atBatIndex] || runnersData[0];
-  const weaknessHint  = WEAKNESS_HINT[currentBatter?.zoneWeakness] || "";
+  // True only after a walk-off ends Bot 3rd mid-at-bat
+  const [walkOffPending, setWalkOffPending] = useState(false);
+
+  const currentBatter          = runBatters[atBatIndex % runBatters.length];
+  const currentPitcher         = runPitchers[atBatIndex % runPitchers.length];
+  const currentFielder         = runFielders[atBatIndex % runFielders.length];
+  const currentRunnerArchetype = runRunnerArchetypes[atBatIndex % runRunnerArchetypes.length];
+  const weaknessHint           = WEAKNESS_HINT[currentBatter?.zoneWeakness] || "";
 
   // ── Helpers ──
   function flashIQ(dir) {
@@ -266,20 +260,20 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     return { atBatOver, contactType };
   }
 
-  // Outs are tracked within the current half-inning only. Each at-bat is
-  // its own fresh half-inning (preset reset on advanceAfterAtBat), so we
-  // don't roll over runners or inning here — that happens at advance time.
   function recordOuts(addedOuts) {
     setOuts(o => o + addedOuts);
   }
 
-  function updateScore(runsScored) {
-    if (runsScored <= 0) return;
-    if (mode === "batting") {
-      setScore(s => ({ ...s, home: s.home + runsScored }));
-    } else {
-      setScore(s => ({ ...s, away: s.away + runsScored }));
-    }
+  // Update score for the side whose half-inning is in progress.
+  // Returns the new score so callers can detect walk-offs synchronously.
+  function applyRuns(runsScored) {
+    if (runsScored <= 0) return score;
+    const newScore = {
+      home: halfInning === "bottom" ? score.home + runsScored : score.home,
+      away: halfInning === "top"    ? score.away + runsScored : score.away,
+    };
+    setScore(newScore);
+    return newScore;
   }
 
   // Detect a home run on hard contact (10% — preserves prior HR likelihood).
@@ -288,8 +282,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     return rngRef.current.next() < 0.10;
   }
 
-  // Build a dynamic WTP question from the current play context.
-  // Returns the scenario object or null if the dynamic resolver fails.
   function buildDynamicWTP({ contactType, pitch, location, batter }) {
     try {
       const direction = resolveContactDirection(
@@ -334,11 +326,10 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
       let playInfo = { play: null, runsScored: 0 };
 
       if (atBatOver && (contactType === "weak_contact" || contactType === "hard_contact")) {
-        // Check HR first — HRs skip WTP.
         if (rollHomeRun(contactType)) {
           const { runners: newRunners, runsScored } = advanceRunners(runners, "home_run");
           setRunners(newRunners);
-          updateScore(runsScored);
+          applyRuns(runsScored);
           setAtBatEnded(true);
           playInfo = { play: "home_run", runsScored };
           setLastResult({ ...result, ...playInfo });
@@ -346,7 +337,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
           return;
         }
 
-        // Generate dynamic WTP (with static fallback). Do NOT resolve the play here.
         let wtp = onboardStep === "done"
           ? buildDynamicWTP({
               contactType,
@@ -356,7 +346,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
             })
           : null;
         if (!wtp) {
-          // Static fallback
           const wtpType = mode === "pitching" ? "defense" : "baserunning";
           wtp = pickWTP(rngRef.current, difficulty, wtpType, runners);
         }
@@ -372,7 +361,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
         return;
       }
 
-      // Non-contact endings (strikeout, walk) — resolve immediately.
       if (atBatOver) {
         setAtBatEnded(true);
         playInfo = resolveAtBatEnd(contactType);
@@ -383,7 +371,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     }, 800);
   }
 
-  // ── Batting mode: present incoming pitch ──
   function startBattingPitch() {
     const incoming = getCPUPitch(currentPitcher, count, rngRef.current);
     setIncomingPitch(incoming);
@@ -464,7 +451,11 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
         if (rollHomeRun(contactType)) {
           const { runners: newRunners, runsScored } = advanceRunners(runners, "home_run");
           setRunners(newRunners);
-          updateScore(runsScored);
+          const newScore = applyRuns(runsScored);
+          // Walk-off check: HOME goes ahead in Bot 3rd
+          if (inning === TOTAL_INNINGS && halfInning === "bottom" && newScore.home > newScore.away) {
+            setWalkOffPending(true);
+          }
           setAtBatEnded(true);
           playInfo = { play: "home_run", runsScored };
           setLastResult({ ...combinedResult, ...playInfo });
@@ -515,7 +506,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     }, 600);
   }
 
-  // ── WTP answer ── (causal path for dynamic; static path for fallback)
+  // ── WTP answer (causal path for dynamic; static path for fallback) ──
   function handleWTPSelect(choiceId) {
     if (wtpSelected) return;
     setWTPSelected(choiceId);
@@ -527,7 +518,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     let playResult = null;
 
     if (scenario.isDynamic && scenario._context) {
-      // CAUSAL PATH — resolve play from player's decision
       try {
         playResult = resolvePlayFromDecision({
           playerChoice:  choiceId,
@@ -543,14 +533,16 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
 
         iqDelta = playResult.iqDelta;
 
-        // Apply game-state consequences from the resolved play
         if (playResult.outsAdded > 0) {
           recordOuts(playResult.outsAdded);
-        } else {
-          setRunners(playResult.runnersAfter);
         }
+        setRunners(playResult.runnersAfter);
+
         if (playResult.runsScored > 0) {
-          updateScore(playResult.runsScored);
+          const newScore = applyRuns(playResult.runsScored);
+          if (inning === TOTAL_INNINGS && halfInning === "bottom" && newScore.home > newScore.away) {
+            setWalkOffPending(true);
+          }
         }
 
         setLastPlayResult(playResult);
@@ -561,7 +553,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
         setLastPlayResult(null);
       }
     } else {
-      // STATIC PATH — original behavior (IQ only, no state change)
       iqDelta = isCorrect ? scenario.iqDeltaCorrect : scenario.iqDeltaWrong;
       setLastPlayResult(null);
     }
@@ -598,19 +589,46 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setWTPRevealed(false);
     setWTPResult(null);
     setLastPlayResult(null);
-    setAtBatEnded(true);
-    advanceAfterAtBat();
+    advancePlay();
   }
 
-  function advanceAfterAtBat() {
-    const nextAB = atBatIndex + 1;
-    if (nextAB >= AT_BATS) {
-      endRun(nextAB);
+  // ── Game flow ──
+
+  // Returns true if game should end. Caller is responsible for calling endGame.
+  function shouldEndGame(currentOuts, currentScore) {
+    // Walk-off in Bot 3rd: home pulled ahead mid-at-bat
+    if (walkOffPending) return true;
+    if (inning === TOTAL_INNINGS && halfInning === "bottom" && currentScore.home > currentScore.away) {
+      return true;
+    }
+    // End of Bot 3rd (3 outs after the bottom half of the last inning)
+    if (currentOuts >= 3 && inning === TOTAL_INNINGS && halfInning === "bottom") {
+      return true;
+    }
+    // End of Top 3rd with HOME leading → skip Bot 3rd
+    if (currentOuts >= 3 && inning === TOTAL_INNINGS && halfInning === "top" && currentScore.home > currentScore.away) {
+      return true;
+    }
+    return false;
+  }
+
+  // After any at-bat ending, decide what's next:
+  //  - End game if a stop condition is met
+  //  - Flip the half-inning if 3 outs were recorded
+  //  - Otherwise continue with the next PA in the same half-inning
+  function advancePlay() {
+    if (shouldEndGame(outs, score)) {
+      endGame();
       return;
     }
-    // Fresh half-inning: reset outs and runners from the preset. Score persists.
-    const preset = AT_BAT_PRESETS[nextAB] || AT_BAT_PRESETS[0];
-    setAtBatIndex(nextAB);
+
+    if (outs >= 3) {
+      flipHalfInning();
+      return;
+    }
+
+    // Continue same half-inning, next PA
+    setAtBatIndex(idx => idx + 1);
     setAtBatEnded(false);
     setCount({ balls: 0, strikes: 0 });
     setPitchHist([]);
@@ -620,14 +638,39 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setIncomingPitch(null);
     setZoneRevealed(false);
     setBattingReady(false);
-    setRunners(preset.runners);
-    setOuts(preset.outs);
+    setPhase("selecting");
+  }
+
+  function flipHalfInning() {
+    // Clear half-inning-scoped state
+    setOuts(0);
+    setRunners({ first: false, second: false, third: false });
+
+    if (halfInning === "top") {
+      setHalfInning("bottom");
+      setMode("batting");
+    } else {
+      setHalfInning("top");
+      setMode("pitching");
+      setInning(i => i + 1);
+    }
+
+    // Reset PA-scoped state and show the half-inning intro card
+    setAtBatIndex(idx => idx + 1);
+    setAtBatEnded(false);
+    setCount({ balls: 0, strikes: 0 });
+    setPitchHist([]);
+    setSelZone(null);
+    setSelPitch(null);
+    setLastResult(null);
+    setIncomingPitch(null);
+    setZoneRevealed(false);
+    setBattingReady(false);
     setPhase("intro");
   }
 
   function resolveAtBatEnd(contactType) {
     if (contactType === "weak_contact" || contactType === "hard_contact") {
-      // Contact plays are resolved through the WTP causal chain — should never reach here.
       console.warn("resolveAtBatEnd called for contact — use WTP flow");
       return { play: null, runsScored: 0 };
     }
@@ -638,7 +681,10 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     if (contactType === "walk") {
       const { runners: newRunners, runsScored } = advanceRunners(runners, "walk");
       setRunners(newRunners);
-      updateScore(runsScored);
+      const newScore = applyRuns(runsScored);
+      if (inning === TOTAL_INNINGS && halfInning === "bottom" && newScore.home > newScore.away) {
+        setWalkOffPending(true);
+      }
       return { play: "walk", runsScored };
     }
     return { play: null, runsScored: 0 };
@@ -649,7 +695,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     return balls >= 4 || strikes >= 3;
   }
 
-  function endRun(finalABIndex) {
+  function endGame() {
     const finalIQ = iq;
     const correct = allResults.filter(r =>
       ["EXPLOITS_WEAKNESS", "GREAT_SWING", "GOOD_SWING", "GOOD_TAKE"].includes(r.verdict)
@@ -686,7 +732,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
       return;
     }
     if (atBatEnded || isAtBatOver()) {
-      advanceAfterAtBat();
+      advancePlay();
       return;
     }
     // Mid-at-bat: continue with the next pitch
@@ -696,14 +742,42 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setPhase("selecting");
   }
 
+  // ── Derived display values ──
+  function nextButtonLabel() {
+    if (pendingWTP) {
+      return mode === "batting" ? "ON THE BASES ▸" : "DEFENSIVE PLAY ▸";
+    }
+    if (!atBatEnded && !isAtBatOver()) {
+      return "NEXT PITCH ▸";
+    }
+    // At-bat ended — what comes next?
+    if (shouldEndGame(outs, score)) return "FINAL ▸";
+    if (outs >= 3) {
+      const nextHalf = halfInning === "top" ? "bottom" : "top";
+      const nextInning = halfInning === "top" ? inning : inning + 1;
+      return `${nextHalf === "top" ? "TOP" : "BOTTOM"} OF ${ordinal(nextInning).toUpperCase()} ▸`;
+    }
+    return "NEXT BATTER ▸";
+  }
+
+  function wtpNextLabel() {
+    if (shouldEndGame(outs, score)) return "FINAL ▸";
+    if (outs >= 3) {
+      const nextHalf = halfInning === "top" ? "bottom" : "top";
+      const nextInning = halfInning === "top" ? inning : inning + 1;
+      return `${nextHalf === "top" ? "TOP" : "BOTTOM"} OF ${ordinal(nextInning).toUpperCase()} ▸`;
+    }
+    return "NEXT BATTER ▸";
+  }
+
   // ── Render ──
   const pitchTypes = currentPitcher?.arsenal || ["Fastball"];
   const pitchHeadline = buildHeadline(lastResult);
-  const atBatBlurb = buildAtBatBlurb(runners, outs, inning, halfInning, mode);
+  const halfInningBlurb = buildHalfInningBlurb(runners, outs, inning, halfInning, mode, score);
 
   const showOnboardPitch = phase === "intro" && atBatIndex === 0 && onboardStep === "pitch";
   const showOnboardBat   = phase === "intro" && atBatIndex === 0 && onboardStep === "bat";
-  const showAtBatIntro   = phase === "intro" && !showOnboardPitch && !showOnboardBat;
+  const showHalfIntro    = phase === "intro" && !showOnboardPitch && !showOnboardBat;
 
   const wtpFielderName = wtpScenario?._context?.fielder?.shortName;
   const wtpRunnerName  = wtpScenario?._context?.runner?.shortName;
@@ -727,10 +801,10 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
           }}
         />
       )}
-      {showAtBatIntro && (
+      {showHalfIntro && (
         <PhaseIntro
           variant={mode}
-          blurb={atBatBlurb}
+          blurb={halfInningBlurb}
           onDone={handleIntroDone}
         />
       )}
@@ -744,7 +818,6 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
       {/* TOP BAR */}
       <div className="atbat-topbar">
         <div className="atbat-counter">
-          AT-BAT {atBatIndex + 1} OF {AT_BATS}
           <span className="atbat-inning">
             {halfInning === "top" ? "TOP" : "BOT"} {ordinal(inning).toUpperCase()}
           </span>
@@ -892,11 +965,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
               onNext={handleFeedbackNext}
               isLucky={lastResult.isLucky}
               headline={pitchHeadline}
-              nextLabel={
-                pendingWTP
-                  ? (mode === "batting" ? "ON THE BASES ▸" : "DEFENSIVE PLAY ▸")
-                  : (atBatEnded ? "NEXT AT-BAT ▸" : "NEXT PITCH ▸")
-              }
+              nextLabel={nextButtonLabel()}
             />
           )}
 
@@ -929,7 +998,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
                 explanation={wtpResult.explanation}
                 streak={streak}
                 onNext={handleWTPNext}
-                nextLabel={atBatIndex + 1 >= AT_BATS ? "FINAL ▸" : "NEXT AT-BAT ▸"}
+                nextLabel={wtpNextLabel()}
                 resultLabel={wtpResult.resultLabel}
                 playResult={wtpResult.playResult}
                 score={score}
