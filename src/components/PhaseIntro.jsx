@@ -39,6 +39,20 @@ const VARIANTS = {
     accent: "var(--px-gold)",
     cta: "LET'S PLAY →",
   },
+  "cap-pitching": {
+    eyebrow: "MANAGER'S DECISION",
+    title: "THAT'S ENOUGH FOR TODAY",
+    subtitle: "You've faced 6 batters this half-inning. Time to hand it over to the bullpen.",
+    accent: "var(--px-red)",
+    cta: "GOT IT →",
+  },
+  "cap-batting": {
+    eyebrow: "MANAGER'S DECISION",
+    title: "WE'RE MOVING ON",
+    subtitle: "6 plate appearances this half-inning. The manager is sending everyone back to the dugout.",
+    accent: "var(--px-gold)",
+    cta: "GOT IT →",
+  },
 };
 
 export default function PhaseIntro({ variant, onDone, autoDismissMs = 6000, blurb }) {

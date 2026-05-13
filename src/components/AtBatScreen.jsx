@@ -207,6 +207,10 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   // True only after a walk-off ends Bot 3rd mid-at-bat
   const [walkOffPending, setWalkOffPending] = useState(false);
 
+  // True when the 6-PA hard cap triggers a flip (and outs < 3). Shows
+  // a manager's-decision PhaseIntro before the half-inning actually flips.
+  const [showCapCard, setShowCapCard] = useState(false);
+
   const currentBatter          = runBatters[atBatIndex % runBatters.length];
   const currentPitcher         = runPitchers[atBatIndex % runPitchers.length];
   const currentFielder         = runFielders[atBatIndex % runFielders.length];
@@ -638,6 +642,12 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     }
 
     if (halfInningOver(outs, newPACount)) {
+      // Cap-triggered flip (outs < 3, PAs hit 6) — show the manager card first.
+      // 3-out flips go straight through.
+      if (outs < 3 && newPACount >= MAX_PAS_PER_HALF) {
+        setShowCapCard(true);
+        return;
+      }
       flipHalfInning();
       return;
     }
@@ -831,6 +841,16 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
         <PhaseIntro
           variant={mode === "batting" ? "wtp-baserunning" : "wtp"}
           onDone={handleWTPIntroDone}
+        />
+      )}
+      {showCapCard && (
+        <PhaseIntro
+          variant={mode === "pitching" ? "cap-pitching" : "cap-batting"}
+          autoDismissMs={0}
+          onDone={() => {
+            setShowCapCard(false);
+            flipHalfInning();
+          }}
         />
       )}
 
