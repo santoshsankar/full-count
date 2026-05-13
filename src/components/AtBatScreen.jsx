@@ -601,6 +601,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setWTPRevealed(false);
     setWTPResult(null);
     setLastPlayResult(null);
+    setPendingWTP(false);   // defensive — must be false before next PA
     advancePlay();
   }
 
@@ -654,7 +655,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
       return;
     }
 
-    // Continue same half-inning, next PA
+    // Continue same half-inning, next PA — clear all per-PA state defensively
     setAtBatIndex(idx => idx + 1);
     setAtBatEnded(false);
     setCount({ balls: 0, strikes: 0 });
@@ -662,9 +663,15 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setSelZone(null);
     setSelPitch(null);
     setLastResult(null);
+    setLastPlayResult(null);
     setIncomingPitch(null);
     setZoneRevealed(false);
     setBattingReady(false);
+    setPendingWTP(false);
+    setWTPScenario(null);
+    setWTPSelected(null);
+    setWTPRevealed(false);
+    setWTPResult(null);
     setPhase("selecting");
   }
 
@@ -683,7 +690,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
       setInning(i => i + 1);
     }
 
-    // Reset PA-scoped state and show the half-inning intro card
+    // Reset all PA- and play-scoped state and show the half-inning intro card
     setAtBatIndex(idx => idx + 1);
     setAtBatEnded(false);
     setCount({ balls: 0, strikes: 0 });
@@ -691,9 +698,15 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setSelZone(null);
     setSelPitch(null);
     setLastResult(null);
+    setLastPlayResult(null);
     setIncomingPitch(null);
     setZoneRevealed(false);
     setBattingReady(false);
+    setPendingWTP(false);
+    setWTPScenario(null);
+    setWTPSelected(null);
+    setWTPRevealed(false);
+    setWTPResult(null);
     setPhase("intro");
   }
 
