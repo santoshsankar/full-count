@@ -135,7 +135,8 @@ function generateCutoffQuestion(
         `Hit the cutoff — higher percentage every time.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction, contactType, outs, mode: "pitching"
+      fielder, runner, runners, direction, contactType, outs,
+      mode: "pitching", playKind: "cutoff",
     }
   };
 }
@@ -188,7 +189,8 @@ function generateAdvanceQuestionOffense(
         `Stay at second.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction, contactType, outs, mode: "batting"
+      fielder, runner, runners, direction, contactType, outs,
+      mode: "batting", playKind: "advance",
     }
   };
 }
@@ -228,7 +230,8 @@ function generateDPQuestion(
     isDynamic: true,
     _context: {
       fielder, runner, runners,
-      direction: "infield", contactType, outs, mode: "pitching"
+      direction: "infield", contactType, outs,
+      mode: "pitching", playKind: "double_play",
     }
   };
 }
@@ -257,7 +260,8 @@ function generateInfieldQuestion(
     isDynamic: true,
     _context: {
       fielder, runner, runners,
-      direction: "infield", contactType, outs, mode: "pitching"
+      direction: "infield", contactType, outs,
+      mode: "pitching", playKind: "infield_throw",
     }
   };
 }
@@ -289,7 +293,8 @@ function generateDefenseAdvanceQuestion(
       `the sure out is at first. Don't trade two outs for one.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction, contactType, outs, mode: "pitching"
+      fielder, runner, runners, direction, contactType, outs,
+      mode: "pitching", playKind: "defense_advance",
     }
   };
 }
@@ -332,7 +337,8 @@ function generateStretchQuestion(
         `${pct}% throw-out chance. You earned first base; don't gift them the out.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction, contactType, outs, mode: "batting"
+      fielder, runner, runners, direction, contactType, outs,
+      mode: "batting", playKind: "stretch",
     }
   };
 }
@@ -364,7 +370,8 @@ function generateBreakUpDPQuestion(
       `that's how you keep the inning alive.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction: "infield", contactType, outs, mode: "batting"
+      fielder, runner, runners, direction: "infield", contactType, outs,
+      mode: "batting", playKind: "break_dp",
     }
   };
 }
@@ -411,7 +418,8 @@ function generateScoreFromBaseQuestion(
         `throws him out ${pct}% of the time. You just traded an inning for an out.`,
     isDynamic: true,
     _context: {
-      fielder, runner, runners, direction, contactType, outs, mode: "batting"
+      fielder, runner, runners, direction, contactType, outs,
+      mode: "batting", playKind: "score_from_base",
     }
   };
 }
@@ -518,6 +526,7 @@ export function resolvePlayFromDecision({
   direction,
   rng,
   mode = "pitching",
+  playKind = "stretch",   // batting: stretch | advance | score_from_base | break_dp
 }) {
   const isCorrect = playerChoice === correctChoice;
 
@@ -546,8 +555,33 @@ export function resolvePlayFromDecision({
   // RNG draw against the player's success probability.
   const playerSucceeded = rng.next() < playerAdjustedSuccessProb;
 
-  // Convert back to the absolute "isOut" fact for game-state consequences.
-  const isOut = mode === "pitching" ? playerSucceeded : !playerSucceeded;
+  // "isOut" means the player's avatar was thrown out (batter in batting mode;
+  // the targeted runner in pitching mode). outsAdded is the game-state count
+  // of outs recorded on this play — they can differ (e.g. break-up DP success
+  // saves the batter but still records the force at second).
+  const isAggressive = playerChoice === "a";
+  let isOut;
+  let outsAdded;
+  if (mode === "pitching") {
+    isOut = playerSucceeded;
+    outsAdded = playerSucceeded ? 1 : 0;
+  } else if (!isAggressive) {
+    // Conservative choice in batting mode — always safe single, no extra outs.
+    isOut = false;
+    outsAdded = 0;
+  } else if (playKind === "stretch") {
+    isOut = !playerSucceeded;          // batter thrown out at 2nd on failure
+    outsAdded = playerSucceeded ? 0 : 1;
+  } else if (playKind === "advance" || playKind === "score_from_base") {
+    isOut = false;                     // lead RUNNER is out, batter is safe at 1st
+    outsAdded = playerSucceeded ? 0 : 1;
+  } else if (playKind === "break_dp") {
+    isOut = !playerSucceeded;          // DP completes → batter out
+    outsAdded = playerSucceeded ? 1 : 2;
+  } else {
+    isOut = !playerSucceeded;
+    outsAdded = playerSucceeded ? 0 : 1;
+  }
 
   // IQ delta — keyed off whether the player got what they wanted.
   const iqDelta = isCorrect && playerSucceeded   ?  8
@@ -560,26 +594,102 @@ export function resolvePlayFromDecision({
   let runnersAfter = { ...runners };
 
   if (mode === "batting") {
-    // BATTING MODE — batter is the one running
-    if (playerSucceeded) {
-      // Batter safely stretched to second (double)
-      runnersAfter = {
-        first:  false,
-        second: true,
-        third:  runners.first || false,
-      };
-      // Runners score from second and third
-      runsScored = (runners.second ? 1 : 0)
-                 + (runners.third  ? 1 : 0);
+    // BATTING MODE — outcome depends on play type AND choice.
+    // The batter always hits at least a single; the WTP decides whether
+    // an extra-base attempt succeeds or fails.
+    if (playKind === "stretch" && isAggressive) {
+      if (playerSucceeded) {
+        // Stretched to 2nd (double). Other runners advance two bases.
+        runnersAfter = {
+          first:  false,
+          second: true,
+          third:  runners.first || false,
+        };
+        runsScored = (runners.second ? 1 : 0) + (runners.third ? 1 : 0);
+      } else {
+        // Out at 2nd trying to stretch. Other runners advanced one base
+        // (as if it were a single — they ran on the hit).
+        runnersAfter = {
+          first:  false,
+          second: runners.first  || false,
+          third:  runners.second || false,
+        };
+        runsScored = runners.third ? 1 : 0;
+      }
+    } else if (playKind === "advance" && isAggressive) {
+      if (playerSucceeded) {
+        // Runner from 1st takes 3rd. Batter on 1st.
+        runnersAfter = { first: true, second: false, third: true };
+        runsScored = runners.third ? 1 : 0;
+      } else {
+        // Runner out at 3rd. Batter on 1st.
+        runnersAfter = { first: true, second: false, third: false };
+        runsScored = runners.third ? 1 : 0;
+      }
+    } else if (playKind === "score_from_base" && isAggressive) {
+      // Lead runner is on 3rd if present, else 2nd.
+      const leadFromThird = !!runners.third;
+      if (playerSucceeded) {
+        // Lead runner scores. Other runners advance one base. Batter on 1st.
+        if (leadFromThird) {
+          runnersAfter = {
+            first:  true,
+            second: runners.first || false,
+            third:  runners.second || false,
+          };
+          runsScored = 1;
+        } else {
+          // Lead was on 2nd
+          runnersAfter = {
+            first:  true,
+            second: runners.first || false,
+            third:  false,
+          };
+          runsScored = 1;
+        }
+      } else {
+        // Lead thrown out at home. Others advanced one base. Batter on 1st.
+        if (leadFromThird) {
+          runnersAfter = {
+            first:  true,
+            second: runners.first || false,
+            third:  runners.second || false,
+          };
+          runsScored = 0;
+        } else {
+          runnersAfter = {
+            first:  true,
+            second: runners.first || false,
+            third:  false,
+          };
+          runsScored = 0;
+        }
+      }
+    } else if (playKind === "break_dp" && isAggressive) {
+      if (playerSucceeded) {
+        // DP broken: batter safe at 1st, runner from 1st out at 2nd.
+        runnersAfter = {
+          first:  true,
+          second: false,
+          third:  runners.second || false,
+        };
+        runsScored = runners.third ? 1 : 0;
+      } else {
+        // DP completes: batter out, runner from 1st out.
+        runnersAfter = {
+          first:  false,
+          second: false,
+          third:  runners.second || false,
+        };
+        runsScored = runners.third ? 1 : 0;
+      }
     } else {
-      // Batter thrown out stretching
+      // Conservative choice (b/c/d) OR fallback: outcome is a clean single.
       runnersAfter = {
-        first:  false,
+        first:  true,
         second: runners.first  || false,
         third:  runners.second || false,
       };
-      // Runner on third scores on the play
-      // even though batter is out
       runsScored = runners.third ? 1 : 0;
     }
   } else {
@@ -617,7 +727,7 @@ export function resolvePlayFromDecision({
     iqDelta,
     runsScored,
     runnersAfter,
-    outsAdded:    isOut ? 1 : 0,
+    outsAdded,
     resultLabel,
     isCorrect,
     isLucky:      !isCorrect && playerSucceeded,

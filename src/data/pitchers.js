@@ -100,7 +100,7 @@ export const pitchers = [
     playerName: "Tank Brody",
     archetype: "Hard Thrower",
     blurb: "Throws hard. Sometimes loses the strike zone entirely.",
-    arsenal: ["Fastball", "Slider", "Fastball"],
+    arsenal: ["Fastball", "Slider"],
     velocity: "elite",
     control: 3,
     tendency: "Throws hard — sometimes loses the strike zone entirely.",

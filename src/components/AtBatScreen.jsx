@@ -542,6 +542,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
           contactType:   scenario._context.contactType,
           direction:     scenario._context.direction,
           mode:          scenario._context.mode || mode,
+          playKind:      scenario._context.playKind,
           rng:           rngRef.current,
         });
 
@@ -819,7 +820,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   }
 
   // ── Render ──
-  const pitchTypes = currentPitcher?.arsenal || ["Fastball"];
+  const pitchTypes = Array.from(new Set(currentPitcher?.arsenal || ["Fastball"]));
   const pitchHeadline = buildHeadline(lastResult);
   const halfInningBlurb = buildHalfInningBlurb(runners, outs, inning, halfInning, mode, score);
 
@@ -883,24 +884,40 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
             {mode.toUpperCase()}
           </span>
         </div>
-        <CountDisplay balls={count.balls} strikes={count.strikes} />
         <IQDisplay iq={iq} flash={iqFlash} />
         {streak >= 2 && (
           <span className="streak-badge">🔥 {streak}</span>
         )}
       </div>
 
+      {/* SCOREBOARD — HOME / AWAY / COUNT / OUTS */}
+      <div className="atbat-scoreboard">
+        <div className="atbat-scoreboard__cell atbat-scoreboard__cell--score">
+          <span className="atbat-scoreboard__label">HOME</span>
+          <span className="atbat-scoreboard__value">{score.home}</span>
+        </div>
+        <div className="atbat-scoreboard__cell atbat-scoreboard__cell--score">
+          <span className="atbat-scoreboard__label">AWAY</span>
+          <span className="atbat-scoreboard__value">{score.away}</span>
+        </div>
+        <div className="atbat-scoreboard__cell atbat-scoreboard__cell--count">
+          <span className="atbat-scoreboard__label">COUNT</span>
+          <CountDisplay balls={count.balls} strikes={count.strikes} />
+        </div>
+        <div className="atbat-scoreboard__cell atbat-scoreboard__cell--outs">
+          <span className="atbat-scoreboard__label">OUTS</span>
+          <span
+            className="atbat-scoreboard__value"
+            style={{ color: outs > 0 ? "var(--px-red)" : "var(--px-chalk)" }}
+          >
+            {outs}
+          </span>
+        </div>
+      </div>
+
       {/* FIELD */}
       <div className="atbat-field">
         <FieldDiagram runners={runners} />
-        <div className="atbat-score">
-          <span className="atbat-score-label">HOME</span>
-          <span className="atbat-score-val">{score.home}</span>
-          <span className="atbat-score-sep">·</span>
-          <span className="atbat-score-label">AWAY</span>
-          <span className="atbat-score-val">{score.away}</span>
-          <span className="atbat-outs">{outs} OUT{outs !== 1 ? "S" : ""}</span>
-        </div>
       </div>
 
       {/* MAIN GAME AREA */}
