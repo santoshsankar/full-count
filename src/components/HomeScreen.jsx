@@ -1,5 +1,10 @@
 import AceSprite from "./AceSprite";
 import { formatDelta } from "../utils/scoring";
+import { batters as allBatters } from "../data/batters";
+import { pitchers as allPitchers } from "../data/pitchers";
+
+function findBatter(id)  { return allBatters.find(b => b.id === id);  }
+function findPitcher(id) { return allPitchers.find(p => p.id === id); }
 
 function MiniBar({ delta }) {
   const h = Math.max(4, Math.min(32, Math.abs(delta) * 3));
@@ -97,10 +102,15 @@ export default function HomeScreen({
   onStart,
   currentDifficulty = "pro",
   onDifficultyChange,
+  lineup,
+  teamName,
+  onChangeRoster,
 }) {
   const lastRun  = history[0];
   const lastDelta = lastRun ? lastRun.iqDelta : null;
   const miniHistory = history.slice(0, 5);
+  const hasTeam = !!lineup && !!teamName;
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="home-screen scanlines crt-vignette">
@@ -143,6 +153,50 @@ export default function HomeScreen({
           )}
         </div>
 
+        {hasTeam && (
+          <div className="home-team px-box">
+            <div className="home-team__name">{teamName}</div>
+            <div className="home-team__est">EST. {currentYear}</div>
+
+            <div className="home-team__section">
+              <span className="home-team__section-label">LINEUP</span>
+              <div className="home-team__list">
+                {lineup.batters.map((id, i) => {
+                  const b = findBatter(id);
+                  if (!b) return null;
+                  return (
+                    <div key={id + i} className="home-team__row">
+                      <span className="home-team__row-num">{i + 1}</span>
+                      <span className="home-team__row-name">{b.playerName}</span>
+                      <span className="home-team__row-archetype">{b.archetype.toUpperCase()}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="home-team__section">
+              <span className="home-team__section-label">PITCHING</span>
+              <div className="home-team__list">
+                {[
+                  { role: "STARTER", id: lineup.starter },
+                  { role: "CLOSER",  id: lineup.closer  },
+                ].map(({ role, id }) => {
+                  const p = findPitcher(id);
+                  if (!p) return null;
+                  return (
+                    <div key={role} className="home-team__row">
+                      <span className="home-team__row-num">{role}</span>
+                      <span className="home-team__row-name">{p.playerName}</span>
+                      <span className="home-team__row-archetype">{p.archetype.toUpperCase()}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="home-difficulty" role="radiogroup" aria-label="Difficulty">
           <span className="home-difficulty__label">DIFFICULTY</span>
           <div className="home-difficulty__row">
@@ -165,8 +219,18 @@ export default function HomeScreen({
         </div>
 
         <button className="btn-cta px-box" onClick={onStart}>
-          STEP INTO THE BOX
+          {hasTeam ? "STEP INTO THE BOX" : "BUILD YOUR TEAM →"}
         </button>
+
+        {hasTeam && (
+          <button
+            type="button"
+            className="home-change-roster"
+            onClick={onChangeRoster}
+          >
+            ↺ CHANGE ROSTER
+          </button>
+        )}
 
         <footer className="home-footer">
           No stats were harmed in the making of this game.

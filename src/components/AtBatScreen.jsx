@@ -143,11 +143,57 @@ function buildHalfInningBlurb(runners, outs, inning, halfInning, mode, score) {
   return `${inningDesc}. ${scoreDesc}. ${runnerDesc}. ${outsDesc}. ${roleDesc}`;
 }
 
-export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro", isFirstRun = false }) {
+export default function AtBatScreen({
+  onComplete,
+  initialIQ,
+  difficulty = "pro",
+  isFirstRun = false,
+  lineup = null,
+  teamName = null,
+}) {
   const seedRef = useRef(Date.now() % 100000);
   const rngRef  = useRef(new SeededRNG(seedRef.current));
 
-  // Run-level archetypes — generous pool so half-innings can extend
+  // ── Roster setup ──
+  // When a lineup is provided:
+  //   - Player batters cycle through lineup.batters in order during BATTING at-bats.
+  //   - CPU batters (not in lineup) are used during PITCHING at-bats.
+  //   - Player starter pitches innings 1-2, closer pitches inning 3.
+  //   - CPU starter/closer (not in lineup) face the player during BATTING at-bats.
+  // When no lineup: fall back to the original random-archetype behavior.
+
+  const [playerBatters] = useState(() => {
+    if (!lineup) return null;
+    const order = lineup.batters
+      .map(id => batters.find(b => b.id === id))
+      .filter(Boolean);
+    return order.length ? order : null;
+  });
+
+  const [cpuBatters] = useState(() => {
+    if (!lineup) return null;
+    const usedIds = new Set(lineup.batters);
+    const pool = batters.filter(b => !usedIds.has(b.id));
+    return pickArchetypes(pool.length ? pool : batters, ARCHETYPE_POOL, rngRef.current);
+  });
+
+  const [playerStarter] = useState(() =>
+    lineup ? pitchers.find(p => p.id === lineup.starter) || null : null
+  );
+  const [playerCloser] = useState(() =>
+    lineup ? pitchers.find(p => p.id === lineup.closer) || null : null
+  );
+
+  // CPU starter + closer (not in player's lineup). Stable across the run.
+  const [cpuPitchers] = useState(() => {
+    if (!lineup) return { starter: null, closer: null };
+    const usedIds = new Set([lineup.starter, lineup.closer]);
+    const pool = pitchers.filter(p => !usedIds.has(p.id));
+    const picks = pickArchetypes(pool.length ? pool : pitchers, 2, rngRef.current);
+    return { starter: picks[0], closer: picks[1] };
+  });
+
+  // Random-archetype fallbacks (also used as the "generic" pool when no lineup)
   const [runBatters]           = useState(() => pickArchetypes(batters,     ARCHETYPE_POOL, rngRef.current));
   const [runPitchers]          = useState(() => pickArchetypes(pitchers,    ARCHETYPE_POOL, rngRef.current));
   const [runFielders]          = useState(() => pickArchetypes(fielders,    ARCHETYPE_POOL, rngRef.current));
@@ -172,6 +218,8 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   const [pitchHist,  setPitchHist]  = useState([]);
   // Tally of PAs completed in the current half-inning. Resets on flip.
   const [halfInningPAs, setHalfInningPAs] = useState(0);
+  // Index into the player's batting lineup (carries across batting half-innings)
+  const [battingOrderIndex, setBattingOrderIndex] = useState(0);
 
   // ── UI phase ──
   const [phase, setPhase] = useState("intro"); // intro|selecting|animating|feedback|wtp-intro|wtp
@@ -211,8 +259,26 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   // a manager's-decision PhaseIntro before the half-inning actually flips.
   const [showCapCard, setShowCapCard] = useState(false);
 
-  const currentBatter          = runBatters[atBatIndex % runBatters.length];
-  const currentPitcher         = runPitchers[atBatIndex % runPitchers.length];
+  // Resolve the current batter and pitcher based on mode + lineup (if any).
+  let currentBatter;
+  let currentPitcher;
+  if (lineup && playerBatters && cpuBatters && playerStarter && playerCloser) {
+    if (mode === "batting") {
+      // Player's lineup is at the plate, in order
+      currentBatter  = playerBatters[battingOrderIndex % playerBatters.length];
+      // CPU is on the mound (their starter for innings 1-2, closer for inning 3)
+      currentPitcher = inning >= 3 ? cpuPitchers.closer : cpuPitchers.starter;
+    } else {
+      // Player is on the mound — face CPU batters
+      currentBatter  = cpuBatters[atBatIndex % cpuBatters.length];
+      // Player starter pitches innings 1-2, closer pitches inning 3
+      currentPitcher = inning >= 3 ? playerCloser : playerStarter;
+    }
+  } else {
+    // No lineup — original random-archetype behavior
+    currentBatter  = runBatters[atBatIndex % runBatters.length];
+    currentPitcher = runPitchers[atBatIndex % runPitchers.length];
+  }
   const currentFielder         = runFielders[atBatIndex % runFielders.length];
   const currentRunnerArchetype = runRunnerArchetypes[atBatIndex % runRunnerArchetypes.length];
   const weaknessHint           = WEAKNESS_HINT[currentBatter?.zoneWeakness] || "";
@@ -641,6 +707,13 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
   function advancePlay() {
     const newPACount = halfInningPAs + 1;
     setHalfInningPAs(newPACount);
+
+    // The PA that just ended counted as one trip through the lineup if
+    // it was a batting PA. Advance the batting order so the next batter
+    // up is the correct slot.
+    if (mode === "batting") {
+      setBattingOrderIndex(idx => idx + 1);
+    }
 
     if (shouldEndGame(outs, score, newPACount)) {
       endGame();
