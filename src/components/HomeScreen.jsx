@@ -197,26 +197,28 @@ export default function HomeScreen({
           </div>
         )}
 
-        <div className="home-difficulty" role="radiogroup" aria-label="Difficulty">
-          <span className="home-difficulty__label">DIFFICULTY</span>
-          <div className="home-difficulty__row">
-            {DIFFICULTIES.map(({ value, label }) => {
-              const selected = currentDifficulty === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  className={`home-difficulty__btn ${selected ? "home-difficulty__btn--selected px-box" : "px-box-inset"}`}
-                  onClick={() => onDifficultyChange && onDifficultyChange(value)}
-                >
-                  {label}
-                </button>
-              );
-            })}
+        {hasTeam && (
+          <div className="home-difficulty" role="radiogroup" aria-label="Difficulty">
+            <span className="home-difficulty__label">DIFFICULTY</span>
+            <div className="home-difficulty__row">
+              {DIFFICULTIES.map(({ value, label }) => {
+                const selected = currentDifficulty === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    className={`home-difficulty__btn ${selected ? "home-difficulty__btn--selected px-box" : "px-box-inset"}`}
+                    onClick={() => onDifficultyChange && onDifficultyChange(value)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         <button className="btn-cta px-box" onClick={onStart}>
           {hasTeam ? "STEP INTO THE BOX" : "BUILD YOUR TEAM →"}

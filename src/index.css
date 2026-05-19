@@ -1876,6 +1876,14 @@ body {
   margin-bottom: 8px;
 }
 .draft-batter__stats { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+/* StatBar in the draft card sits on dark navy — bump label contrast */
+.draft-batter__stats .stat-bar-label {
+  color: var(--px-chalk-dim);
+  opacity: 1;
+}
+.draft-batter__stats .stat-bar-num {
+  color: var(--px-chalk);
+}
 .draft-batter__tendency {
   font-family: var(--font-body);
   font-style: italic;
