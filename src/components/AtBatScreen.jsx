@@ -366,6 +366,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
         setWTPResult(null);
         setLastPlayResult(null);
         setPendingWTP(true);
+        setAtBatEnded(true);
 
         setLastResult({ ...result, ...playInfo });
         setPhase("feedback");
@@ -495,6 +496,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
         setWTPResult(null);
         setLastPlayResult(null);
         setPendingWTP(true);
+        setAtBatEnded(true);
 
         setLastResult({ ...combinedResult, ...playInfo });
         setIncomingPitch(null);
@@ -672,6 +674,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setWTPSelected(null);
     setWTPRevealed(false);
     setWTPResult(null);
+    setWalkOffPending(false);
     setPhase("selecting");
   }
 
@@ -707,6 +710,7 @@ export default function AtBatScreen({ onComplete, initialIQ, difficulty = "pro",
     setWTPSelected(null);
     setWTPRevealed(false);
     setWTPResult(null);
+    setWalkOffPending(false);
     setPhase("intro");
   }
 

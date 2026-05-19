@@ -140,7 +140,10 @@ function generateCutoffQuestion(
   };
 }
 
-function generateAdvanceQuestion(
+// OFFENSIVE: should the runner on first take third on this hit?
+// Only routed from the batting branch of resolveDynamicPlay. The mode tag
+// in _context (`"batting"`) reflects this — don't call from the pitching path.
+function generateAdvanceQuestionOffense(
   situation, fielder, runner, runners,
   outs, direction, contactType
 ) {
@@ -464,7 +467,7 @@ export function resolveDynamicPlay({
       );
     }
     if (playType === "advance_or_hold") {
-      return generateAdvanceQuestion(
+      return generateAdvanceQuestionOffense(
         situation, fielder, runner, runners,
         outs, direction, contactType
       );
