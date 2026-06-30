@@ -352,7 +352,10 @@ export function generatePitcher(archetypeId, rng) {
 // ─── GENERATE DRAFT POOL ────────────────────────────────────────────────
 
 // Default salary cap a drafted team must fit under (mirrors DraftScreen's cap).
-const DEFAULT_CAP = 80;
+// At $100 the cheapest legal team (~$69, max $80) always fits with headroom for
+// a couple of star upgrades, so the reroll guard below effectively never fires —
+// it stays as a safety net if the cap or salary tiers are ever retuned downward.
+const DEFAULT_CAP = 100;
 
 function generatePoolOnce(rng) {
   // 5 batters per archetype = 60 batters total

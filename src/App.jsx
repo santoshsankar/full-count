@@ -123,7 +123,7 @@ export default function App() {
           draftPool={draftPool}
           teamName={teamName}
           onComplete={completeDraft}
-          cap={80}
+          cap={100}
         />
       )}
       {view === VIEWS.LINEUP && draftPicks && (
