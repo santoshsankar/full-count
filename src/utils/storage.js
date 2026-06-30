@@ -30,15 +30,29 @@ export function saveRun(runSummary) {
 
 export function loadLineup() {
   try {
-    return JSON.parse(localStorage.getItem(KEYS.LINEUP)) || null;
+    const parsed = JSON.parse(localStorage.getItem(KEYS.LINEUP));
+    if (!parsed) return null;
+    // Migration guard: pre-generator lineups stored archetype-id strings
+    // instead of full generated player objects. Discard those so the user
+    // re-drafts rather than crashing on undefined player fields.
+    const b = parsed.batters;
+    if (!Array.isArray(b) || b.some(x => typeof x !== "object" || x == null)) {
+      return null;
+    }
+    return parsed;
   } catch { return null; }
 }
 
+// Stores the full generated player objects (~500 bytes each, ~4KB total),
+// not just archetype ids — well within localStorage limits.
 export function saveLineup(lineup) {
-  localStorage.setItem(KEYS.LINEUP, JSON.stringify(lineup));
+  const withMeta = { ...lineup, savedAt: lineup.savedAt || Date.now() };
+  localStorage.setItem(KEYS.LINEUP, JSON.stringify(withMeta));
 }
 
 export function clearLineup() {
+  // No draft pool is cached in localStorage (it lives in App state only), so
+  // there is nothing else to clear here.
   localStorage.removeItem(KEYS.LINEUP);
 }
 

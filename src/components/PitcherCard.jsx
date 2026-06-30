@@ -25,7 +25,7 @@ export default function PitcherCard({ pitcher, pitchHistory = [] }) {
       </div>
       <div className="pitcher-card__body">
         <div className="pitcher-card__name-wrap">
-          <span className="pitcher-card__name">{pitcher.playerName}</span>
+          <span className="pitcher-card__name">{pitcher.playerName || pitcher.displayName}</span>
           <span className="pitcher-card__archetype">{pitcher.archetype}</span>
         </div>
         <div className="pitcher-card__tendency">{pitcher.tendency}</div>

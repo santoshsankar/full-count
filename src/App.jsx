@@ -11,6 +11,8 @@ import {
   loadLineup, saveLineup, clearLineup,
   loadTeamName, saveTeamName, clearTeamName,
 } from "./utils/storage";
+import { SeededRNG } from "./utils/simEngine";
+import { generateDraftPool } from "./utils/playerGenerator";
 import "./index.css";
 
 const VIEWS = {
@@ -33,6 +35,10 @@ export default function App() {
   const [lineup,     setLineup]     = useState(loadLineup);
   const [teamName,   setTeamName]   = useState(loadTeamName);
   const [draftPicks, setDraftPicks] = useState(null);
+  const [draftPool,  setDraftPool]  = useState(null);
+  // Seed for the generated draft pool. Reseeded on roster change so each new
+  // draft surfaces a fresh pool.
+  const [draftSeed,  setDraftSeed]  = useState(() => Date.now() % 100000);
 
   // ── Routing ──
 
@@ -64,6 +70,8 @@ export default function App() {
     setLineup(null);
     setTeamName(null);
     setDraftPicks(null);
+    setDraftPool(null);                  // force a fresh pool next draft
+    setDraftSeed(Date.now() % 100000);   // ...with a fresh seed
     setView(VIEWS.TEAM_NAME);
   }
 
@@ -72,6 +80,11 @@ export default function App() {
   function completeTeamName(name) {
     setTeamName(name);
     saveTeamName(name);
+    // Generate the draft pool once when the draft flow begins.
+    if (!draftPool) {
+      const rng = new SeededRNG(draftSeed);
+      setDraftPool(generateDraftPool(rng));
+    }
     setView(VIEWS.DRAFT);
   }
 
@@ -81,8 +94,9 @@ export default function App() {
   }
 
   function completeLineup(finalLineup) {
-    saveLineup(finalLineup);
-    setLineup(finalLineup);
+    const full = { ...finalLineup, teamName };
+    saveLineup(full);
+    setLineup(full);
     setDraftPicks(null);
     setView(VIEWS.HOME);
   }
@@ -104,8 +118,13 @@ export default function App() {
       {view === VIEWS.TEAM_NAME && (
         <TeamNameScreen onComplete={completeTeamName} />
       )}
-      {view === VIEWS.DRAFT && (
-        <DraftScreen teamName={teamName} onComplete={completeDraft} />
+      {view === VIEWS.DRAFT && draftPool && (
+        <DraftScreen
+          draftPool={draftPool}
+          teamName={teamName}
+          onComplete={completeDraft}
+          cap={80}
+        />
       )}
       {view === VIEWS.LINEUP && draftPicks && (
         <LineupScreen picks={draftPicks} onComplete={completeLineup} />

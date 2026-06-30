@@ -436,6 +436,7 @@ export function resolveDynamicPlay({
   score,
   rng,
   mode = "pitching",
+  batter = null,
 }) {
   const playType = determinePlayType(
     runners, outs, contactType
@@ -453,12 +454,17 @@ export function resolveDynamicPlay({
     ? "center field"
     : "the infield";
 
-  // Perspective-aware situation framing
-  const situation = mode === "batting"
-    ? `${runnerDesc}, ${outsDesc}. ${contactDesc} to ${dirDesc}. ` +
-      `Fielder: ${fielder.shortName}. Runner: ${runner.shortName}.`
-    : `${runnerDesc}, ${outsDesc}. ${contactDesc} to ${dirDesc}. ` +
-      `Your fielder: ${fielder.shortName}. Runner: ${runner.shortName}.`;
+  // Perspective-aware situation framing. When a batter is provided, lead with
+  // the hitter's name and how hard the ball was struck.
+  const batterName = batter?.displayName || batter?.playerName || null;
+  const fielderClause = mode === "batting"
+    ? `Fielder: ${fielder.shortName}. Runner: ${runner.shortName}.`
+    : `Your fielder: ${fielder.shortName}. Runner: ${runner.shortName}.`;
+
+  const situation = batterName
+    ? `${batterName} hits a ${contactType === "hard_contact" ? "hard" : "soft"} ball ` +
+      `to ${dirDesc}. ${runnerDesc}, ${outsDesc}. ${fielderClause}`
+    : `${runnerDesc}, ${outsDesc}. ${contactDesc} to ${dirDesc}. ${fielderClause}`;
 
   // OFFENSIVE branch — player is at the plate / running the bases
   if (mode === "batting") {

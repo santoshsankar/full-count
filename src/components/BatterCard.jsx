@@ -11,7 +11,7 @@ export default function BatterCard({ batter, compact = false }) {
       <div className="batter-card__header">
         <span className="batter-card__badge batter-card__badge--bat">AT THE PLATE</span>
         <div className="batter-card__name-wrap">
-          <span className="batter-card__name">{batter.playerName}</span>
+          <span className="batter-card__name">{batter.playerName || batter.displayName}</span>
           <span className="batter-card__archetype">{batter.archetype}</span>
         </div>
       </div>

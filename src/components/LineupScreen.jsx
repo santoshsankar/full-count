@@ -1,18 +1,20 @@
-import { useState } from "react";
-import { batters as allBatters } from "../data/batters";
+import { useMemo, useState } from "react";
 
 const SLOT_COUNT = 6;
-
-function findBatter(id) {
-  return allBatters.find(b => b.id === id);
-}
+const EMPTY = [];
 
 export default function LineupScreen({ picks, onComplete }) {
-  // slots: array of batterId | null, length SLOT_COUNT
+  // picks.batters are full generated player objects (length SLOT_COUNT).
+  const draftedBatters = picks?.batters || EMPTY;
+  const byId = useMemo(
+    () => Object.fromEntries(draftedBatters.map(b => [b.id, b])),
+    [draftedBatters]
+  );
+
+  // slots: array of batter id | null, length SLOT_COUNT
   const [slots, setSlots] = useState(() => Array(SLOT_COUNT).fill(null));
   const [activeSlot, setActiveSlot] = useState(0); // start with slot 1 active
 
-  const draftedIds = picks?.batters || [];
   const placedSet = new Set(slots.filter(Boolean));
   const allPlaced = slots.every(Boolean);
 
@@ -43,7 +45,7 @@ export default function LineupScreen({ picks, onComplete }) {
   function finish() {
     if (!allPlaced) return;
     onComplete({
-      batters: slots,           // already ordered slot 1-6
+      batters: slots.map(id => byId[id]),   // ordered full objects, slot 1-6
       starter: picks.starter,
       closer:  picks.closer,
     });
@@ -60,7 +62,7 @@ export default function LineupScreen({ picks, onComplete }) {
 
       <section className="lineup-screen__slots">
         {slots.map((id, idx) => {
-          const batter = id ? findBatter(id) : null;
+          const batter = id ? byId[id] : null;
           const isActive = idx === activeSlot;
           const cls = [
             "lineup-slot",
@@ -77,7 +79,7 @@ export default function LineupScreen({ picks, onComplete }) {
               <span className="lineup-slot__num">{idx + 1}</span>
               {batter ? (
                 <>
-                  <span className="lineup-slot__name">{batter.playerName}</span>
+                  <span className="lineup-slot__name">{batter.displayName || batter.playerName}</span>
                   <span className="lineup-slot__archetype">{batter.archetype.toUpperCase()}</span>
                 </>
               ) : (
@@ -93,23 +95,21 @@ export default function LineupScreen({ picks, onComplete }) {
       <section className="lineup-screen__pool">
         <h2 className="lineup-screen__pool-label">YOUR DRAFTED PLAYERS</h2>
         <div className="lineup-screen__pool-list">
-          {draftedIds.map(id => {
-            const batter = findBatter(id);
-            if (!batter) return null;
-            const placed = placedSet.has(id);
+          {draftedBatters.map(batter => {
+            const placed = placedSet.has(batter.id);
             const cls = [
               "lineup-pool-row",
               placed ? "lineup-pool-row--placed" : "px-box-inset",
             ].filter(Boolean).join(" ");
             return (
               <button
-                key={id}
+                key={batter.id}
                 type="button"
                 className={cls}
-                onClick={() => placePlayer(id)}
+                onClick={() => placePlayer(batter.id)}
                 disabled={placed || activeSlot == null}
               >
-                <span className="lineup-pool-row__name">{batter.playerName}</span>
+                <span className="lineup-pool-row__name">{batter.displayName || batter.playerName}</span>
                 <span className="lineup-pool-row__archetype">{batter.archetype}</span>
               </button>
             );

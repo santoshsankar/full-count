@@ -1,12 +1,32 @@
 import { useMemo, useState } from "react";
-import { batters as allBatters } from "../data/batters";
-import { pitchers as allPitchers } from "../data/pitchers";
 import StatBar from "./StatBar";
 
 const BATTERS_NEEDED = 6;
 const VEL_DOTS = { elite: 4, high: 3, medium: 2, low: 1 };
+// Stable empty-array reference so the byId useMemo deps don't churn each render.
+const EMPTY = [];
 
-function BatterCard({ batter, selected, locked, onToggle, index }) {
+// Salary-tier → text color for the "$N M" chip on each card.
+const SALARY_TIER_COLOR = {
+  20: "var(--px-red)",       // elite, expensive
+  15: "var(--px-gold)",      // solid
+  10: "var(--px-chalk)",     // role player
+  5:  "var(--px-chalk-dim)", // cheap
+};
+
+function salaryColor(salary) {
+  return SALARY_TIER_COLOR[salary] || "var(--px-chalk)";
+}
+
+function SalaryChip({ salary }) {
+  return (
+    <span className="draft-salary" style={{ color: salaryColor(salary) }}>
+      ${salary}M
+    </span>
+  );
+}
+
+function BatterCard({ batter, selected, locked, onToggle, index, pickNumber }) {
   const cls = [
     "draft-batter",
     selected ? "draft-batter--selected px-box-active" : "px-box-inset",
@@ -19,15 +39,21 @@ function BatterCard({ batter, selected, locked, onToggle, index }) {
       className={cls}
       onClick={onToggle}
       disabled={locked && !selected}
-      style={{ animationDelay: `${index * 40}ms` }}
+      style={{ animationDelay: `${Math.min(index, 20) * 40}ms` }}
     >
       <div className="draft-batter__head">
         <span className="draft-batter__archetype-badge">{batter.archetype}</span>
-        {selected && <span className="draft-batter__selected-badge">SELECTED</span>}
+        <div className="draft-batter__head-right">
+          {selected && pickNumber != null && (
+            <span className="draft-pick-badge">PICK {pickNumber}</span>
+          )}
+          {selected && <span className="draft-batter__selected-badge">SELECTED</span>}
+          <SalaryChip salary={batter.salary} />
+        </div>
       </div>
       <div className="draft-batter__body">
         <div className={`draft-batter__name ${selected ? "draft-batter__name--selected" : ""}`}>
-          {batter.playerName}
+          {batter.displayName || batter.playerName}
         </div>
         <div className="draft-batter__archetype">{batter.archetype}</div>
         <div className="draft-batter__stats">
@@ -57,25 +83,39 @@ function PitcherCard({ pitcher, selected, locked, onToggle, index }) {
       className={cls}
       onClick={onToggle}
       disabled={locked && !selected}
-      style={{ animationDelay: `${index * 40}ms` }}
+      style={{ animationDelay: `${Math.min(index, 20) * 40}ms` }}
     >
       <div className="draft-pitcher__left">
         <div className={`draft-pitcher__name ${selected ? "draft-pitcher__name--selected" : ""}`}>
-          {pitcher.playerName}
+          {pitcher.displayName || pitcher.playerName}
         </div>
         <div className="draft-pitcher__archetype">{pitcher.archetype}</div>
       </div>
-      <div className="draft-pitcher__velo" title={`Velocity: ${pitcher.velocity}`}>
-        {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className={`draft-pitcher__velo-dot ${i < dots ? "draft-pitcher__velo-dot--on" : ""}`} />
-        ))}
+      <div className="draft-pitcher__right">
+        <SalaryChip salary={pitcher.salary} />
+        <div className="draft-pitcher__velo" title={`Velocity: ${pitcher.velocity}`}>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className={`draft-pitcher__velo-dot ${i < dots ? "draft-pitcher__velo-dot--on" : ""}`} />
+          ))}
+        </div>
       </div>
     </button>
   );
 }
 
-export default function DraftScreen({ onComplete, teamName }) {
-  // Selected batter ids in pick order
+export default function DraftScreen({ draftPool, onComplete, teamName, cap = 80 }) {
+  const batterPool  = draftPool?.batterPool  || EMPTY;
+  const pitcherPool = draftPool?.pitcherPool || EMPTY;
+
+  // Fast lookup by unique generated id.
+  const byId = useMemo(() => {
+    const map = {};
+    for (const p of batterPool)  map[p.id] = p;
+    for (const p of pitcherPool) map[p.id] = p;
+    return map;
+  }, [batterPool, pitcherPool]);
+
+  // Selected batter ids in pick order; starter/closer by unique id.
   const [selectedBatters, setSelectedBatters] = useState([]);
   const [starterId, setStarterId] = useState(null);
   const [closerId, setCloserId]   = useState(null);
@@ -86,28 +126,59 @@ export default function DraftScreen({ onComplete, teamName }) {
   const pitchersDone = !!starterId && !!closerId;
   const canFinish = battersDone && pitchersDone;
 
+  // ── Budget ──
+  const spent = useMemo(() => {
+    let total = 0;
+    for (const id of selectedBatters) total += byId[id]?.salary || 0;
+    if (starterId) total += byId[starterId]?.salary || 0;
+    if (closerId)  total += byId[closerId]?.salary || 0;
+    return total;
+  }, [selectedBatters, starterId, closerId, byId]);
+
+  const remaining = cap - spent;
+
+  const leftColor =
+    remaining >= 20 ? "var(--px-green)" :
+    remaining >= 10 ? "var(--px-gold)"  :
+    "var(--px-red)";
+
+  function canAfford(player, isSelected) {
+    if (isSelected) return true;
+    return (player?.salary || 0) <= remaining;
+  }
+
   function toggleBatter(id) {
     setSelectedBatters(prev => {
       if (prev.includes(id)) return prev.filter(x => x !== id);
       if (prev.length >= BATTERS_NEEDED) return prev;
+      if ((byId[id]?.salary || 0) > remaining) return prev; // can't afford
       return [...prev, id];
     });
   }
 
   function toggleStarter(id) {
-    setStarterId(prev => (prev === id ? null : id));
+    setStarterId(prev => {
+      if (prev === id) return null;
+      if ((byId[id]?.salary || 0) > remaining) return prev;
+      return id;
+    });
   }
 
   function toggleCloser(id) {
-    setCloserId(prev => (prev === id ? null : id));
+    setCloserId(prev => {
+      if (prev === id) return null;
+      if ((byId[id]?.salary || 0) > remaining) return prev;
+      return id;
+    });
   }
 
   function finish() {
     if (!canFinish) return;
     onComplete({
-      batters: selectedBatters,
-      starter: starterId,
-      closer:  closerId,
+      // Full generated objects, in pick order for batters.
+      batters: selectedBatters.map(id => byId[id]),
+      starter: byId[starterId],
+      closer:  byId[closerId],
     });
   }
 
@@ -125,6 +196,22 @@ export default function DraftScreen({ onComplete, teamName }) {
         </div>
       </header>
 
+      {/* Salary cap tracker — sticky below header */}
+      <div className="draft-budget">
+        <div className="draft-budget__cell">
+          <span className="draft-budget__label">BUDGET</span>
+          <span className="draft-budget__value">${cap}M</span>
+        </div>
+        <div className="draft-budget__cell">
+          <span className="draft-budget__label">SPENT</span>
+          <span className="draft-budget__value">${spent}M</span>
+        </div>
+        <div className="draft-budget__cell">
+          <span className="draft-budget__label">LEFT</span>
+          <span className="draft-budget__value" style={{ color: leftColor }}>${remaining}M</span>
+        </div>
+      </div>
+
       {teamName && (
         <div className="draft-screen__team-name">FOR {teamName}</div>
       )}
@@ -132,9 +219,11 @@ export default function DraftScreen({ onComplete, teamName }) {
       <section className="draft-screen__section">
         <h2 className="draft-screen__section-label">PICK 6 BATTERS</h2>
         <div className="draft-screen__batters">
-          {allBatters.map((b, i) => {
+          {batterPool.map((b, i) => {
             const selected = selectedBatters.includes(b.id);
-            const locked = batterCount >= BATTERS_NEEDED && !selected;
+            const affordable = canAfford(b, selected);
+            const locked = (batterCount >= BATTERS_NEEDED && !selected) || !affordable;
+            const pickNumber = selected ? selectedBatters.indexOf(b.id) + 1 : null;
             return (
               <BatterCard
                 key={b.id}
@@ -143,6 +232,7 @@ export default function DraftScreen({ onComplete, teamName }) {
                 locked={locked}
                 onToggle={() => toggleBatter(b.id)}
                 index={i}
+                pickNumber={pickNumber}
               />
             );
           })}
@@ -152,32 +242,42 @@ export default function DraftScreen({ onComplete, teamName }) {
       <section className="draft-screen__section">
         <h2 className="draft-screen__section-label">PICK YOUR STARTER</h2>
         <div className="draft-screen__pitchers">
-          {allPitchers.map((p, i) => (
-            <PitcherCard
-              key={`starter-${p.id}`}
-              pitcher={p}
-              selected={starterId === p.id}
-              locked={closerId === p.id}
-              onToggle={() => toggleStarter(p.id)}
-              index={i}
-            />
-          ))}
+          {pitcherPool.map((p, i) => {
+            const selected = starterId === p.id;
+            const affordable = canAfford(p, selected);
+            const locked = closerId === p.id || !affordable;
+            return (
+              <PitcherCard
+                key={`starter-${p.id}`}
+                pitcher={p}
+                selected={selected}
+                locked={locked}
+                onToggle={() => toggleStarter(p.id)}
+                index={i}
+              />
+            );
+          })}
         </div>
       </section>
 
       <section className="draft-screen__section">
         <h2 className="draft-screen__section-label">PICK YOUR CLOSER</h2>
         <div className="draft-screen__pitchers">
-          {allPitchers.map((p, i) => (
-            <PitcherCard
-              key={`closer-${p.id}`}
-              pitcher={p}
-              selected={closerId === p.id}
-              locked={starterId === p.id}
-              onToggle={() => toggleCloser(p.id)}
-              index={i}
-            />
-          ))}
+          {pitcherPool.map((p, i) => {
+            const selected = closerId === p.id;
+            const affordable = canAfford(p, selected);
+            const locked = starterId === p.id || !affordable;
+            return (
+              <PitcherCard
+                key={`closer-${p.id}`}
+                pitcher={p}
+                selected={selected}
+                locked={locked}
+                onToggle={() => toggleCloser(p.id)}
+                index={i}
+              />
+            );
+          })}
         </div>
       </section>
 

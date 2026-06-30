@@ -1,10 +1,5 @@
 import AceSprite from "./AceSprite";
 import { formatDelta } from "../utils/scoring";
-import { batters as allBatters } from "../data/batters";
-import { pitchers as allPitchers } from "../data/pitchers";
-
-function findBatter(id)  { return allBatters.find(b => b.id === id);  }
-function findPitcher(id) { return allPitchers.find(p => p.id === id); }
 
 function MiniBar({ delta }) {
   const h = Math.max(4, Math.min(32, Math.abs(delta) * 3));
@@ -161,13 +156,12 @@ export default function HomeScreen({
             <div className="home-team__section">
               <span className="home-team__section-label">LINEUP</span>
               <div className="home-team__list">
-                {lineup.batters.map((id, i) => {
-                  const b = findBatter(id);
+                {lineup.batters.map((b, i) => {
                   if (!b) return null;
                   return (
-                    <div key={id + i} className="home-team__row">
+                    <div key={b.id || i} className="home-team__row">
                       <span className="home-team__row-num">{i + 1}</span>
-                      <span className="home-team__row-name">{b.playerName}</span>
+                      <span className="home-team__row-name">{b.displayName || b.playerName}</span>
                       <span className="home-team__row-archetype">{b.archetype.toUpperCase()}</span>
                     </div>
                   );
@@ -179,15 +173,14 @@ export default function HomeScreen({
               <span className="home-team__section-label">PITCHING</span>
               <div className="home-team__list">
                 {[
-                  { role: "STARTER", id: lineup.starter },
-                  { role: "CLOSER",  id: lineup.closer  },
-                ].map(({ role, id }) => {
-                  const p = findPitcher(id);
+                  { role: "STARTER", p: lineup.starter },
+                  { role: "CLOSER",  p: lineup.closer  },
+                ].map(({ role, p }) => {
                   if (!p) return null;
                   return (
                     <div key={role} className="home-team__row">
                       <span className="home-team__row-num">{role}</span>
-                      <span className="home-team__row-name">{p.playerName}</span>
+                      <span className="home-team__row-name">{p.displayName || p.playerName}</span>
                       <span className="home-team__row-archetype">{p.archetype.toUpperCase()}</span>
                     </div>
                   );

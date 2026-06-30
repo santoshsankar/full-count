@@ -23,6 +23,7 @@ import {
 import {
   resolveDynamicPlay, resolvePlayFromDecision, resolveContactDirection,
 } from "../utils/playResolver";
+import { generateCPUBatters, generateCPUPitchers } from "../utils/playerGenerator";
 import { applyIQDelta, getStreakBonus } from "../utils/scoring";
 
 // Game structure: a stylized 3-inning baseball game with 6 half-innings.
@@ -162,34 +163,30 @@ export default function AtBatScreen({
   //   - CPU starter/closer (not in lineup) face the player during BATTING at-bats.
   // When no lineup: fall back to the original random-archetype behavior.
 
+  // Player's batters are full generated objects — use them directly.
   const [playerBatters] = useState(() => {
     if (!lineup) return null;
-    const order = lineup.batters
-      .map(id => batters.find(b => b.id === id))
-      .filter(Boolean);
-    return order.length ? order : null;
+    return lineup.batters?.length ? lineup.batters : null;
   });
 
+  // CPU batters: generated on the fly with the run's seeded RNG, from
+  // archetypes NOT represented in the player's lineup.
   const [cpuBatters] = useState(() => {
     if (!lineup) return null;
-    const usedIds = new Set(lineup.batters);
-    const pool = batters.filter(b => !usedIds.has(b.id));
-    return pickArchetypes(pool.length ? pool : batters, ARCHETYPE_POOL, rngRef.current);
+    const usedArchetypes = (lineup.batters || []).map(b => b.archetypeId);
+    return generateCPUBatters(rngRef.current, ARCHETYPE_POOL, usedArchetypes);
   });
 
-  const [playerStarter] = useState(() =>
-    lineup ? pitchers.find(p => p.id === lineup.starter) || null : null
-  );
-  const [playerCloser] = useState(() =>
-    lineup ? pitchers.find(p => p.id === lineup.closer) || null : null
-  );
+  const [playerStarter] = useState(() => (lineup ? lineup.starter || null : null));
+  const [playerCloser]  = useState(() => (lineup ? lineup.closer  || null : null));
 
-  // CPU starter + closer (not in player's lineup). Stable across the run.
+  // CPU starter + closer — generated on the fly, excluding the player's
+  // pitcher archetypes. Stable across the run.
   const [cpuPitchers] = useState(() => {
     if (!lineup) return { starter: null, closer: null };
-    const usedIds = new Set([lineup.starter, lineup.closer]);
-    const pool = pitchers.filter(p => !usedIds.has(p.id));
-    const picks = pickArchetypes(pool.length ? pool : pitchers, 2, rngRef.current);
+    const usedArchetypes = [lineup.starter?.archetypeId, lineup.closer?.archetypeId]
+      .filter(Boolean);
+    const picks = generateCPUPitchers(rngRef.current, 2, usedArchetypes);
     return { starter: picks[0], closer: picks[1] };
   });
 
@@ -373,6 +370,7 @@ export default function AtBatScreen({
         score,
         rng: rngRef.current,
         mode,
+        batter,
       });
     } catch (err) {
       console.error("resolveDynamicPlay failed — falling back to static WTP", err);
