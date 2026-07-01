@@ -54,7 +54,7 @@ export default function FeedbackPanel({
 
   return (
     <div
-      className={`feedback-panel ${visible ? "feedback-panel--visible" : ""}`}
+      className={`feedback-panel panel-3d ${visible ? "feedback-panel--visible" : ""}`}
       style={{ borderTopColor: borderColor }}
     >
       {headline && (
@@ -63,7 +63,7 @@ export default function FeedbackPanel({
 
       <div className="feedback-panel__top">
         <span
-          className="feedback-panel__verdict headline-90s"
+          className="feedback-panel__verdict headline-flat"
           style={{ color: isGood ? "var(--px-green)" : "var(--px-red)" }}
         >
           {label}

@@ -36,7 +36,7 @@ export default class ErrorBoundary extends Component {
       return (
         <div className="error-recovery scanlines crt-vignette">
           <div className="error-recovery__card px-box">
-            <h1 className="error-recovery__title headline-90s">SOMETHING WENT WRONG</h1>
+            <h1 className="error-recovery__title headline-flat">SOMETHING WENT WRONG</h1>
             <p className="error-recovery__msg">
               The play hit a snag. Your baseball IQ and roster are safe.
             </p>

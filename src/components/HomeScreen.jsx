@@ -108,12 +108,12 @@ export default function HomeScreen({
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="home-screen halftone-bg scanlines crt-vignette">
+    <div className="home-screen scanlines crt-vignette">
       <StadiumBG />
 
       <div className="home-content">
-        <div className="home-logo-wrap foil-shine">
-          <h1 className="home-logo headline-90s print-misalign" data-text="FULL COUNT">FULL COUNT</h1>
+        <div className="home-logo-wrap">
+          <h1 className="home-logo headline-flat">FULL COUNT</h1>
           <p className="home-tagline">6 AT-BATS. PURE BASEBALL IQ.</p>
         </div>
 
@@ -123,7 +123,7 @@ export default function HomeScreen({
 
         {/* IQ badge */}
         <div className="home-iq-wrap">
-          <div className="iq-badge px-box">
+          <div className="iq-badge panel-3d--gold">
             <span className="iq-badge__label">BASEBALL IQ</span>
             <span className="iq-badge__score">{iq}</span>
             {lastDelta !== null && (

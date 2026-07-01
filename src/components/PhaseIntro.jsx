@@ -80,7 +80,7 @@ export default function PhaseIntro({ variant, onDone, autoDismissMs = 6000, blur
           {v.eyebrow}
         </div>
         <div className="phase-intro__rule" style={{ background: v.accent }} />
-        <h1 className="phase-intro__title headline-90s" style={{ color: v.accent }}>
+        <h1 className="phase-intro__title headline-flat" style={{ color: v.accent }}>
           {v.title}
         </h1>
         <p className="phase-intro__subtitle">{v.subtitle}</p>

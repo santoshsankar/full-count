@@ -8,7 +8,7 @@ export default function BatterCard({ batter, compact = false }) {
 
   return (
     <div className="batter-card px-box">
-      <div className="batter-card__header foil-shine">
+      <div className="batter-card__header card-header-flat">
         <span className="batter-card__badge batter-card__badge--bat">AT THE PLATE</span>
         <div className="batter-card__name-wrap">
           <span className="batter-card__name">{batter.playerName || batter.displayName}</span>

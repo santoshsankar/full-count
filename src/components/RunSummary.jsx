@@ -48,12 +48,12 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
   }
 
   return (
-    <div className="run-summary halftone-bg">
+    <div className="run-summary">
       {/* 1 — Header */}
       <div className={`summary-section ${step >= 1 ? "summary-section--in" : ""}`}>
-        <div className="summary-header foil-shine">
+        <div className="summary-header">
           <span className="summary-header__rule" />
-          <h2 className="summary-title headline-90s print-misalign" data-text="FINAL">FINAL</h2>
+          <h2 className="summary-title headline-flat">FINAL</h2>
           <span className="summary-header__rule" />
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
       {/* 5 — Best decision */}
       {bestDecision && (
         <div className={`summary-section ${step >= 5 ? "summary-section--in" : ""}`}>
-          <div className="summary-decision summary-decision--best">
+          <div className="summary-decision summary-decision--best panel-3d">
             <div className="summary-decision__label">BEST CALL</div>
             <div className="summary-decision__text">
               {bestDecision.scenarioText || bestDecision.explanation || "Great pitch selection"}
@@ -138,7 +138,7 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
       {/* 6 — Worst decision */}
       {worstDecision && (
         <div className={`summary-section ${step >= 6 ? "summary-section--in" : ""}`}>
-          <div className="summary-decision summary-decision--worst">
+          <div className="summary-decision summary-decision--worst panel-3d">
             <div className="summary-decision__label">WORST CALL</div>
             <div className="summary-decision__text">
               {worstDecision.scenarioText || worstDecision.explanation || "Pitch to their strength"}

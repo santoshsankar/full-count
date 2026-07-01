@@ -387,8 +387,8 @@ body {
   letter-spacing: 3px;
   color: var(--px-ink);
   background: var(--px-gold);
-  border: 4px solid var(--px-ink);
-  box-shadow: 8px 8px 0 var(--px-gold-dk);
+  border: 3px solid #000;
+  box-shadow: 4px 4px 0 #000;
   padding: 16px 40px;
   border-radius: 0;
   width: 100%;
@@ -398,7 +398,7 @@ body {
   min-height: 64px;
 }
 .btn-cta:active {
-  transform: translate(8px, 8px);
+  transform: translate(4px, 4px);
   box-shadow: none;
 }
 
@@ -562,15 +562,15 @@ body {
   letter-spacing: 2px;
   color: var(--px-ink);
   background: var(--px-gold);
-  border: 3px solid var(--px-ink);
+  border: 3px solid #000;
   width: 100%;
   min-height: 56px;
   border-radius: 0;
-  box-shadow: 8px 8px 0 var(--px-gold-dk);
+  box-shadow: 4px 4px 0 #000;
   transition: transform 100ms steps(1), box-shadow 100ms steps(1);
 }
 .btn-throw:active {
-  transform: translate(8px, 8px);
+  transform: translate(4px, 4px);
   box-shadow: none !important;
 }
 
@@ -678,14 +678,14 @@ body {
   letter-spacing: 2px;
   color: var(--px-chalk);
   background: var(--px-red);
-  border: 3px solid var(--px-red-dk);
+  border: 3px solid #000;
   min-height: 72px;
   border-radius: 0;
-  box-shadow: 8px 8px 0 var(--px-red-dk);
+  box-shadow: 4px 4px 0 #000;
   transition: transform 100ms steps(1), box-shadow 100ms steps(1);
 }
 .btn-swing:active {
-  transform: translate(8px, 8px);
+  transform: translate(4px, 4px);
   box-shadow: none;
 }
 .btn-take {
@@ -695,14 +695,14 @@ body {
   letter-spacing: 2px;
   color: var(--px-chalk);
   background: var(--px-navy-lit);
-  border: 3px solid var(--px-chalk-dim);
+  border: 3px solid #000;
   min-height: 72px;
   border-radius: 0;
-  box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
+  box-shadow: 4px 4px 0 #000;
   transition: transform 100ms steps(1), box-shadow 100ms steps(1);
 }
 .btn-take:active {
-  transform: translate(8px, 8px);
+  transform: translate(4px, 4px);
   box-shadow: none;
 }
 
@@ -879,7 +879,7 @@ body {
   justify-content: space-between;
   padding: 8px 12px;
   height: 32px;
-  background: linear-gradient(90deg, var(--px-navy) 0%, var(--px-navy-lit) 50%, var(--px-gold-dk) 100%);
+  background: var(--px-navy);
 }
 .batter-card__badge, .pitcher-card__badge {
   font-family: var(--font-pixel);
@@ -2348,49 +2348,42 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   1990s BROADCAST / TOPPS STADIUM CLUB AESTHETIC LAYER
-   Layers on top of the pixel/CRT foundation — never replaces it.
+   FLAT 16-BIT SPORTS CARTRIDGE AESTHETIC LAYER
+   Reference: Ken Griffey Jr. Presents MLB (SNES), RBI Baseball.
+   Flat solid colors, thick black outlines, hard-bordered boxes,
+   two-tone (light/dark) pseudo-3D shading — no gradients, no
+   blur, no animated shine.
    ══════════════════════════════════════════════════════════ */
 
-/* 1 — Diagonal foil-shine band (card headers, logo band, summary header) */
-.foil-shine {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(
-    135deg,
-    var(--px-navy-mid) 0%,
-    var(--px-navy-lit) 35%,
-    var(--px-gold) 48%,
-    var(--px-gold) 52%,
-    var(--px-navy-lit) 65%,
-    var(--px-navy-mid) 100%
-  );
-  background-size: 250% 250%;
-  animation: foilShift 4s steps(8) infinite;
+/* 1 — Two-tone pseudo-3D shading (light top/left, dark bottom/right).
+   Simulates a light source with flat color blocks — not a gradient. */
+.panel-3d {
+  background: var(--px-navy-mid);
+  border-top: 3px solid var(--px-navy-lit);
+  border-left: 3px solid var(--px-navy-lit);
+  border-bottom: 3px solid #000;
+  border-right: 3px solid #000;
 }
-@keyframes foilShift {
-  0%   { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
-}
-/* Respect reduced-motion / low-end devices — hold a static foil gradient. */
-@media (prefers-reduced-motion: reduce) {
-  .foil-shine { animation: none; background-position: 50% 50%; }
+.panel-3d--gold {
+  background: var(--px-gold);
+  border-top: 3px solid #fff8d6;
+  border-left: 3px solid #fff8d6;
+  border-bottom: 3px solid var(--px-gold-shadow);
+  border-right: 3px solid var(--px-gold-shadow);
 }
 
-/* 2 — Chunky broadcast headline: hard offset shadow layers (not blurred) */
-.headline-90s {
+/* 2 — Flat headline: single hard 2px offset, no blur, no ghosting. */
+.headline-flat {
   font-family: 'Bebas Neue', sans-serif;
   color: var(--px-gold);
-  text-shadow:
-    2px 2px 0 var(--px-navy),
-    4px 4px 0 var(--px-navy-dk),
-    4px 4px 8px rgba(0,0,0,0.4);
+  text-shadow: 2px 2px 0 #000;
   letter-spacing: 1px;
 }
 
-/* 3 — Color-blocked stat panels (ESPN/Genesis broadcast look) */
+/* 3 — Flat color-blocked stat panels (left-border accent by stat type). */
 .stat-block {
   background: var(--px-navy-mid);
+  border: 2px solid #000;
   border-left: 6px solid var(--px-gold);
   padding: 6px 10px;
   margin-bottom: 4px;
@@ -2399,42 +2392,20 @@ body {
 .stat-block--contact { border-left-color: var(--px-teal);  }
 .stat-block--speed   { border-left-color: var(--px-green); }
 .stat-block--eye     { border-left-color: var(--px-gold);  }
-/* Stat text sits on a dark block now — force light, full-contrast text. */
+/* Stat text sits on a dark block — force light, full-contrast text. */
 .stat-block .stat-bar-label { color: var(--px-chalk); opacity: 1; }
 .stat-block .stat-bar-num   { color: var(--px-chalk); }
 
-/* 4 — Halftone print-dot texture (hero / summary backgrounds only) */
-.halftone-bg {
-  background-image: radial-gradient(
-    circle,
-    rgba(255,255,255,0.06) 1px,
-    transparent 1px
-  );
-  background-size: 6px 6px;
+/* 4 — Flat card-header bar: solid color + single hard bottom rule. */
+.card-header-flat {
+  background: var(--px-navy);
+  border-bottom: 3px solid #000;
+  padding: 6px 10px;
 }
 
-/* 5 — Print-registration misalignment (signature flourish — logo + FINAL only) */
-.print-misalign {
-  position: relative;
-}
-.print-misalign::before,
-.print-misalign::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
-}
-.print-misalign::before {
-  color: var(--px-teal);
-  transform: translate(-1px, 1px);
-  opacity: 0.5;
-  z-index: -1;
-}
-.print-misalign::after {
-  color: var(--px-red);
-  transform: translate(1px, -1px);
-  opacity: 0.5;
-  z-index: -1;
+/* 5 — IQ badge in gold panel-3d: dark text, no glow. */
+.iq-badge.panel-3d--gold .iq-badge__label,
+.iq-badge.panel-3d--gold .iq-badge__score {
+  color: var(--px-ink);
+  text-shadow: none;
 }
