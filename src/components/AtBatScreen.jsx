@@ -357,6 +357,16 @@ export default function AtBatScreen({
 
   function buildDynamicWTP({ contactType, pitch, location, batter }) {
     try {
+      // The dynamic play needs a fielder and a runner archetype. If the
+      // archetype cycling ever hands us undefined for a frame, bail to the
+      // static WTP pool rather than dereferencing undefined downstream.
+      if (!currentFielder || !currentRunnerArchetype) {
+        console.error(
+          "buildDynamicWTP: missing fielder/runner archetype — using static WTP",
+          { currentFielder, currentRunnerArchetype }
+        );
+        return null;
+      }
       const direction = resolveContactDirection(
         pitch, location, batter, rngRef.current
       );
@@ -1125,19 +1135,19 @@ export default function AtBatScreen({
           <ScenarioCard scenario={wtpScenario} />
           {!wtpResult ? (
             <AnswerChoices
-              choices={wtpScenario.choices}
+              choices={wtpScenario?.choices}
               selected={wtpSelected}
               revealed={wtpRevealed}
-              correctId={wtpScenario.correctAnswerId}
+              correctId={wtpScenario?.correctAnswerId}
               onSelect={handleWTPSelect}
             />
           ) : (
             <>
               <AnswerChoices
-                choices={wtpScenario.choices}
+                choices={wtpScenario?.choices}
                 selected={wtpSelected}
                 revealed={true}
-                correctId={wtpScenario.correctAnswerId}
+                correctId={wtpScenario?.correctAnswerId}
                 onSelect={() => {}}
               />
               <FeedbackPanel

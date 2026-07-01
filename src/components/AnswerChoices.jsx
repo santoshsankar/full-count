@@ -1,6 +1,6 @@
 const LABELS = ["A", "B", "C", "D"];
 
-export default function AnswerChoices({ choices, selected, revealed, correctId, onSelect }) {
+export default function AnswerChoices({ choices = [], selected, revealed, correctId, onSelect }) {
   return (
     <div className="answer-choices">
       {choices.map((choice, i) => {

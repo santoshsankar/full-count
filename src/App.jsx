@@ -5,6 +5,7 @@ import RunSummary      from "./components/RunSummary";
 import TeamNameScreen  from "./components/TeamNameScreen";
 import DraftScreen     from "./components/DraftScreen";
 import LineupScreen    from "./components/LineupScreen";
+import ErrorBoundary   from "./components/ErrorBoundary";
 import {
   loadIQ, saveIQ,
   loadHistory, saveRun,
@@ -130,14 +131,16 @@ export default function App() {
         <LineupScreen picks={draftPicks} onComplete={completeLineup} />
       )}
       {view === VIEWS.GAME && (
-        <AtBatScreen
-          initialIQ={iq}
-          difficulty={difficulty}
-          isFirstRun={history.length === 0}
-          lineup={lineup}
-          teamName={teamName}
-          onComplete={endRun}
-        />
+        <ErrorBoundary onReset={goHome} resetLabel="BACK TO DUGOUT ▸">
+          <AtBatScreen
+            initialIQ={iq}
+            difficulty={difficulty}
+            isFirstRun={history.length === 0}
+            lineup={lineup}
+            teamName={teamName}
+            onComplete={endRun}
+          />
+        </ErrorBoundary>
       )}
       {view === VIEWS.SUMMARY && runData && (
         <RunSummary
