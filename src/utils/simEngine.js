@@ -86,6 +86,38 @@ const ADJACENT_ZONES = {
   "low-away":   ["low-middle", "mid-away"],
 };
 
+// The nine strike-zone cells. This is the authoritative whitelist — anything
+// NOT one of these (notably "ball") is outside the zone. Classifying by a
+// positive whitelist (rather than "=== 'ball'") means a malformed or
+// unrecognized location can never be silently miscounted as a called strike.
+export const ZONE_LOCATIONS = [
+  "up-in",  "up-middle",  "up-away",
+  "mid-in", "middle",     "mid-away",
+  "low-in", "low-middle", "low-away",
+];
+const ZONE_SET = new Set(ZONE_LOCATIONS);
+
+// True if the pitch is in the strike zone. A location that is neither a
+// recognized zone nor "ball" is a bug upstream — log it loudly and treat it as
+// a ball, so we never gift the pitcher a free called strike.
+export function isStrikeLocation(location) {
+  if (ZONE_SET.has(location)) return true;
+  if (location !== "ball") {
+    console.error("Unrecognized pitch location — treating as a ball:", location);
+  }
+  return false;
+}
+
+// Rate at which the CPU misses the strike zone entirely (throws a real ball),
+// scaled by the pitcher's control stat.
+function ballRate(control) {
+  if (control >= 9) return 0.15; // elite command
+  if (control >= 7) return 0.25;
+  if (control >= 5) return 0.35;
+  if (control >= 3) return 0.50;
+  return 0.60;                   // 1-2: wild
+}
+
 const BREAKING_PITCHES = ["Slider", "Curveball", "Breaking", "Sinker"];
 const isBreaking = (pitch) => BREAKING_PITCHES.some(b => pitch.includes(b));
 
@@ -263,13 +295,12 @@ export function resolvePitch(pitch, location, batter, count, pitchHistory, rng, 
   weights = applySequenceModifier(weights, pitchHistory, pitch, location);
   weights = normalize(weights);
 
-  // "ball" location always resolves to ball outcome
-  let outcome = location === "ball"
-    ? "ball"
-    : rng.weightedPick(weights);
+  // A location outside the strike zone always resolves to a ball.
+  const inZone = isStrikeLocation(location);
+  let outcome = inZone ? rng.weightedPick(weights) : "ball";
 
   // An in-zone pitch can never be called a ball — coerce to called_strike (batter took it)
-  if (location !== "ball" && outcome === "ball") {
+  if (inZone && outcome === "ball") {
     outcome = "called_strike";
   }
 
@@ -328,21 +359,23 @@ export function getCPUPitch(pitcher, count, rng) {
   else if (balls > strikes) pool = pitcher.countLogic.behind;
   else                      pool = pitcher.countLogic.even;
 
-  // 15% randomness — pick any entry from the pool
+  // Pick any entry from the count-appropriate pool.
   const idx = Math.floor(rng.next() * pool.length);
   const parsed = parseCountLogicEntry(pool[idx]);
 
-  // Low-control pitchers miss location 20% of the time
-  if (pitcher.control <= 4 && rng.next() < 0.20) {
+  // How often the pitch misses the zone scales with control. Pitchers behind
+  // in the count press and miss more, so drop effective control by 2 there
+  // (only when behind — never when ahead or even).
+  let effControl = pitcher.control;
+  if (balls > strikes) effControl -= 2;
+
+  if (rng.next() < ballRate(effControl)) {
+    // Missed the zone entirely — a real ball.
+    parsed.location = "ball";
+  } else if (effControl <= 5 && rng.next() < 0.25) {
+    // Kept it a strike, but nibbled off the intended spot into an adjacent cell.
     const adj = ADJACENT_ZONES[parsed.location];
-    if (adj) {
-      // 50% chance miss goes to adjacent zone, 50% becomes ball
-      if (rng.next() < 0.5) {
-        parsed.location = adj[Math.floor(rng.next() * adj.length)];
-      } else {
-        parsed.location = "ball";
-      }
-    }
+    if (adj) parsed.location = adj[Math.floor(rng.next() * adj.length)];
   }
 
   return parsed;
@@ -377,8 +410,8 @@ export function buildBattingExplanation(verdict, decision, pitch, location, pitc
 
 // IQ delta for batting-mode decisions
 export function getBattingIQDelta(decision, location, pitcher, count) {
-  const inZone = location !== "ball";
-  const wayOutside = location === "ball";
+  const inZone = isStrikeLocation(location);
+  const wayOutside = !inZone;
 
   if (decision === "take") {
     if (!inZone) return { delta: 5, verdict: "GOOD_TAKE", label: "GOOD READ" };

@@ -6,40 +6,47 @@
 
 /* ── Color Palette ── */
 :root {
-  --px-navy:         #0a1628;
-  --px-navy-mid:     #0d1f3c;
-  --px-navy-lit:     #1a3352;
-  --px-cream:        #f2e8c9;
-  --px-cream-dk:     #d4c9a0;
-  --px-gold:         #f5c842;
-  --px-gold-dk:      #c9960a;
-  --px-gold-shadow:  #8a6400;
-  --px-red:          #cc2233;
-  --px-red-dk:       #881122;
-  --px-green:        #22aa44;
-  --px-green-dk:     #116622;
-  --px-teal:         #00ccaa;
-  --px-chalk:        #f0e8d0;
-  --px-chalk-dim:    #a09070;
+  /* Backgrounds — brighter, less navy-dominant */
+  --px-navy:         #1a2f5c;
+  --px-navy-mid:     #2b4a8a;
+  --px-navy-lit:     #3d63ad;
+  /* Card stock — warmer, brighter cream */
+  --px-cream:        #fff4d6;
+  --px-cream-dk:     #f0dba0;
+  /* Primary accent — brighter gold/yellow */
+  --px-gold:         #ffd93d;
+  --px-gold-dk:      #e0a800;
+  --px-gold-shadow:  #b37e00;
+  /* Action colors — punchier, more saturated */
+  --px-red:          #ff3355;
+  --px-red-dk:       #d4143a;
+  --px-green:        #2ee66b;
+  --px-green-dk:     #1cb84f;
+  /* Teal accent — classic 90s neon pop, brighter */
+  --px-teal:         #00ffcc;
+  /* Text — keep readable on brighter backgrounds */
+  --px-chalk:        #fffaf0;
+  --px-chalk-dim:    #c9b896;
   --px-ink:          #1a1008;
   --px-skin:         #d4956a;
   --px-skin-dk:      #aa6640;
-  --px-grass:        #2d6e1e;
-  --px-grass-alt:    #336b20;
-  --px-dirt:         #8b6340;
-  --px-dirt-lit:     #a07548;
-  --px-dirt-dk:      #6b4a28;
+  /* Grass/dirt — brighter field colors */
+  --px-grass:        #3d9b28;
+  --px-grass-alt:    #45a02f;
+  --px-dirt:         #b8875a;
+  --px-dirt-lit:     #cc9966;
+  --px-dirt-dk:      #96703f;
 
-  /* Isometric depth */
-  --px-gold-top:    #f5c842;
-  --px-gold-left:   #c9960a;
-  --px-gold-right:  #8a6400;
-  --px-navy-top:    #1a3352;
-  --px-navy-left:   #0d1f3c;
-  --px-navy-right:  #070f1e;
-  --px-cream-top:   #f2e8c9;
-  --px-cream-left:  #d4c9a0;
-  --px-cream-right: #b5a878;
+  /* Isometric depth — kept in step with the brighter base colors above */
+  --px-gold-top:    #ffd93d;
+  --px-gold-left:   #e0a800;
+  --px-gold-right:  #b37e00;
+  --px-navy-top:    #3d63ad;
+  --px-navy-left:   #2b4a8a;
+  --px-navy-right:  #0f1d3a;
+  --px-cream-top:   #fff4d6;
+  --px-cream-left:  #f0dba0;
+  --px-cream-right: #d9c07f;
 
   /* Fonts */
   --font-pixel: 'Press Start 2P', monospace;
@@ -124,8 +131,8 @@ body {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0,0,0,0.04) 2px,
-    rgba(0,0,0,0.04) 4px
+    rgba(0,0,0,0.02) 2px,
+    rgba(0,0,0,0.02) 4px
   );
   pointer-events: none;
   z-index: 9999;
@@ -136,8 +143,8 @@ body {
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    transparent 60%,
-    rgba(0,0,0,0.45) 100%
+    transparent 65%,
+    rgba(0,0,0,0.30) 100%
   );
   pointer-events: none;
   z-index: 9998;
@@ -1972,6 +1979,29 @@ body {
   font-size: 18px;
   color: var(--px-chalk);
 }
+
+/* Draft pool sort toggle */
+.draft-sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+.draft-sort__label { color: var(--px-chalk-dim); }
+.draft-sort__sep   { color: var(--px-chalk-dim); opacity: 0.5; }
+.draft-sort__opt {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: var(--px-chalk-dim);
+  background: none;
+  border: none;
+  padding: 2px 3px;
+  cursor: pointer;
+}
+.draft-sort__opt--active { color: var(--px-gold); }
 
 /* Salary chip on each player card */
 .draft-salary {

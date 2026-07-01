@@ -26,6 +26,64 @@ function SalaryChip({ salary }) {
   );
 }
 
+// ── Sort ──
+function lastNameKey(p) {
+  return (p.lastName || p.displayName || p.playerName || "").toLowerCase();
+}
+
+// Returns a sorted COPY — never mutates the pool. Sorting only changes display
+// order; affordability/selection logic is unaffected.
+function sortPlayers(list, mode) {
+  const arr = [...list];
+  const byName = (a, b) => lastNameKey(a).localeCompare(lastNameKey(b));
+  switch (mode) {
+    case "salary-asc":
+      return arr.sort((a, b) => a.salary - b.salary || byName(a, b));
+    case "name":
+      return arr.sort(byName);
+    case "archetype":
+      return arr.sort((a, b) =>
+        (a.archetype || "").localeCompare(b.archetype || "") ||
+        b.salary - a.salary || byName(a, b));
+    case "salary-desc":
+    default:
+      return arr.sort((a, b) => b.salary - a.salary || byName(a, b));
+  }
+}
+
+function SortToggle({ mode, onChange }) {
+  const isSalary = mode === "salary-desc" || mode === "salary-asc";
+  const arrow = mode === "salary-asc" ? "↑" : "↓";
+  return (
+    <div className="draft-sort">
+      <span className="draft-sort__label">SORT:</span>
+      <button
+        type="button"
+        className={`draft-sort__opt ${isSalary ? "draft-sort__opt--active" : ""}`}
+        onClick={() => onChange(mode === "salary-desc" ? "salary-asc" : "salary-desc")}
+      >
+        SALARY {arrow}
+      </button>
+      <span className="draft-sort__sep">|</span>
+      <button
+        type="button"
+        className={`draft-sort__opt ${mode === "name" ? "draft-sort__opt--active" : ""}`}
+        onClick={() => onChange("name")}
+      >
+        NAME
+      </button>
+      <span className="draft-sort__sep">|</span>
+      <button
+        type="button"
+        className={`draft-sort__opt ${mode === "archetype" ? "draft-sort__opt--active" : ""}`}
+        onClick={() => onChange("archetype")}
+      >
+        ARCHETYPE
+      </button>
+    </div>
+  );
+}
+
 function BatterCard({ batter, selected, locked, onToggle, index, pickNumber }) {
   const cls = [
     "draft-batter",
@@ -119,6 +177,16 @@ export default function DraftScreen({ draftPool, onComplete, teamName, cap = 80 
   const [selectedBatters, setSelectedBatters] = useState([]);
   const [starterId, setStarterId] = useState(null);
   const [closerId, setCloserId]   = useState(null);
+
+  // Display sort per pool (default salary-desc — groups players by cost so it's
+  // easy to scan what you can afford from the top). Independent per section.
+  const [sortBatters, setSortBatters] = useState("salary-desc");
+  const [sortStarter, setSortStarter] = useState("salary-desc");
+  const [sortCloser,  setSortCloser]  = useState("salary-desc");
+
+  const sortedBatters = useMemo(() => sortPlayers(batterPool,  sortBatters), [batterPool,  sortBatters]);
+  const sortedStarter = useMemo(() => sortPlayers(pitcherPool, sortStarter), [pitcherPool, sortStarter]);
+  const sortedCloser  = useMemo(() => sortPlayers(pitcherPool, sortCloser),  [pitcherPool, sortCloser]);
 
   const batterCount = selectedBatters.length;
   const pitcherCount = (starterId ? 1 : 0) + (closerId ? 1 : 0);
@@ -218,8 +286,9 @@ export default function DraftScreen({ draftPool, onComplete, teamName, cap = 80 
 
       <section className="draft-screen__section">
         <h2 className="draft-screen__section-label">PICK 6 BATTERS</h2>
+        <SortToggle mode={sortBatters} onChange={setSortBatters} />
         <div className="draft-screen__batters">
-          {batterPool.map((b, i) => {
+          {sortedBatters.map((b, i) => {
             const selected = selectedBatters.includes(b.id);
             const affordable = canAfford(b, selected);
             const locked = (batterCount >= BATTERS_NEEDED && !selected) || !affordable;
@@ -241,8 +310,9 @@ export default function DraftScreen({ draftPool, onComplete, teamName, cap = 80 
 
       <section className="draft-screen__section">
         <h2 className="draft-screen__section-label">PICK YOUR STARTER</h2>
+        <SortToggle mode={sortStarter} onChange={setSortStarter} />
         <div className="draft-screen__pitchers">
-          {pitcherPool.map((p, i) => {
+          {sortedStarter.map((p, i) => {
             const selected = starterId === p.id;
             const affordable = canAfford(p, selected);
             const locked = closerId === p.id || !affordable;
@@ -262,8 +332,9 @@ export default function DraftScreen({ draftPool, onComplete, teamName, cap = 80 
 
       <section className="draft-screen__section">
         <h2 className="draft-screen__section-label">PICK YOUR CLOSER</h2>
+        <SortToggle mode={sortCloser} onChange={setSortCloser} />
         <div className="draft-screen__pitchers">
-          {pitcherPool.map((p, i) => {
+          {sortedCloser.map((p, i) => {
             const selected = closerId === p.id;
             const affordable = canAfford(p, selected);
             const locked = starterId === p.id || !affordable;

@@ -18,7 +18,7 @@ import { whereIsThePlay } from "../data/whereIsThePlay";
 import {
   SeededRNG, resolvePitch, getCPUPitch, getBattingIQDelta,
   advanceRunners, pickArchetypes,
-  buildBattingExplanation,
+  buildBattingExplanation, isStrikeLocation,
 } from "../utils/simEngine";
 import {
   resolveDynamicPlay, resolvePlayFromDecision, resolveContactDirection,
@@ -490,11 +490,13 @@ export default function AtBatScreen({
       "batting"
     );
 
+    const inZone = isStrikeLocation(location);
     let outcome = simResult.outcome;
     if (decision === "take") {
-      outcome = location === "ball" ? "ball" : "called_strike";
+      // Take: in the zone → called strike; anything outside the zone → ball, always.
+      outcome = inZone ? "called_strike" : "ball";
     } else {
-      if (location === "ball") {
+      if (!inZone) {
         outcome = rngRef.current.next() < 0.85 ? "whiff" : "foul";
       } else if (outcome === "ball") {
         outcome = "foul";
