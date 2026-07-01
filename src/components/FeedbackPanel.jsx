@@ -54,8 +54,8 @@ export default function FeedbackPanel({
 
   return (
     <div
-      className={`feedback-panel panel-3d ${visible ? "feedback-panel--visible" : ""}`}
-      style={{ borderTopColor: borderColor }}
+      className={`feedback-panel ${visible ? "feedback-panel--visible" : ""}`}
+      style={{ borderLeftColor: borderColor }}
     >
       {headline && (
         <div className="feedback-panel__headline">{headline}</div>
@@ -70,7 +70,7 @@ export default function FeedbackPanel({
         </span>
         <span
           className="feedback-panel__iq"
-          style={{ color: isGood ? "var(--px-gold)" : "var(--px-red)" }}
+          style={{ color: isGood ? "var(--px-green-dark)" : "var(--px-red)" }}
         >
           {formatDelta(iqDelta)} IQ
         </span>

@@ -17,13 +17,13 @@ const VARIANTS = {
     eyebrow: "BALL IN PLAY",
     title: "DEFENSIVE PLAY!",
     subtitle: "The hitter put it in play. Your defense has to make a decision.",
-    accent: "var(--px-teal)",
+    accent: "var(--px-green)",
   },
   "wtp-baserunning": {
     eyebrow: "BALL IN PLAY",
     title: "ON THE BASES!",
     subtitle: "You put the ball in play. Now your runners have a decision to make.",
-    accent: "var(--px-teal)",
+    accent: "var(--px-green)",
   },
   "onboard-pitch": {
     eyebrow: "WELCOME TO FULL COUNT",

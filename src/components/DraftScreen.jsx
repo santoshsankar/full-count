@@ -7,15 +7,16 @@ const VEL_DOTS = { elite: 4, high: 3, medium: 2, low: 1 };
 const EMPTY = [];
 
 // Salary-tier → text color for the "$N M" chip on each card.
+// Tier colors readable on the cream draft card.
 const SALARY_TIER_COLOR = {
-  20: "var(--px-red)",       // elite, expensive
-  15: "var(--px-gold)",      // solid
-  10: "var(--px-chalk)",     // role player
-  5:  "var(--px-chalk-dim)", // cheap
+  20: "var(--px-red)",        // elite, expensive
+  15: "var(--px-gold-dark)",  // solid
+  10: "var(--px-navy)",       // role player
+  5:  "var(--px-ink)",        // cheap
 };
 
 function salaryColor(salary) {
-  return SALARY_TIER_COLOR[salary] || "var(--px-chalk)";
+  return SALARY_TIER_COLOR[salary] || "var(--px-ink)";
 }
 
 function SalaryChip({ salary }) {

@@ -22,8 +22,8 @@ function Base({ gx, gy, occupied }) {
   const bl = iso(gx - 0.3, gy + 0.3);
 
   const topColor   = occupied ? "var(--px-gold)"        : "var(--px-chalk)";
-  const leftColor  = occupied ? "var(--px-gold-dk)"     : "var(--px-chalk-dim)";
-  const rightColor = occupied ? "var(--px-gold-shadow)" : "#808060";
+  const leftColor  = occupied ? "var(--px-gold-dark)"     : "var(--px-ink)";
+  const rightColor = occupied ? "var(--px-gold-dark)" : "#808060";
 
   const topPoints   = `${tl.x},${tl.y} ${tr.x},${tr.y} ${br.x},${br.y} ${bl.x},${bl.y}`;
   const leftPoints  = `${bl.x},${bl.y} ${tl.x},${tl.y} ${tl.x},${tl.y + CUBE_H} ${bl.x},${bl.y + CUBE_H}`;
@@ -46,7 +46,7 @@ export default function FieldDiagram({ runners = {} }) {
     points: pts(
       [0, row], [6, row], [6, row + 1], [0, row + 1]
     ),
-    color: row % 2 === 0 ? "var(--px-grass)" : "var(--px-grass-alt)",
+    color: row % 2 === 0 ? "var(--px-green)" : "var(--px-green-dark)",
   }));
 
   // Infield dirt diamond
@@ -89,20 +89,20 @@ export default function FieldDiagram({ runners = {} }) {
       ))}
 
       {/* Warning track */}
-      <polygon points={warnPts} fill="none" stroke="var(--px-cream-dk)" strokeWidth="4" />
+      <polygon points={warnPts} fill="none" stroke="var(--px-cream-dark)" strokeWidth="4" />
 
       {/* Infield dirt */}
-      <polygon points={dirtTop} fill="var(--px-dirt-lit)" />
+      <polygon points={dirtTop} fill="var(--px-brown-light)" />
 
       {/* Base paths */}
       <line x1={iso(4,4).x} y1={iso(4,4).y} x2={iso(4,2).x} y2={iso(4,2).y}
-        stroke="var(--px-dirt)" strokeWidth="2" strokeOpacity="0.6" />
+        stroke="var(--px-brown)" strokeWidth="2" strokeOpacity="0.6" />
       <line x1={iso(4,2).x} y1={iso(4,2).y} x2={iso(2,2).x} y2={iso(2,2).y}
-        stroke="var(--px-dirt)" strokeWidth="2" strokeOpacity="0.6" />
+        stroke="var(--px-brown)" strokeWidth="2" strokeOpacity="0.6" />
       <line x1={iso(2,2).x} y1={iso(2,2).y} x2={iso(2,4).x} y2={iso(2,4).y}
-        stroke="var(--px-dirt)" strokeWidth="2" strokeOpacity="0.6" />
+        stroke="var(--px-brown)" strokeWidth="2" strokeOpacity="0.6" />
       <line x1={iso(2,4).x} y1={iso(2,4).y} x2={iso(4,4).x} y2={iso(4,4).y}
-        stroke="var(--px-dirt)" strokeWidth="2" strokeOpacity="0.6" />
+        stroke="var(--px-brown)" strokeWidth="2" strokeOpacity="0.6" />
 
       {/* Foul lines */}
       <line x1={iso(4,4).x} y1={iso(4,4).y} x2={iso(0,0).x} y2={iso(0,0).y}
@@ -111,7 +111,7 @@ export default function FieldDiagram({ runners = {} }) {
         stroke="var(--px-chalk)" strokeWidth="1" strokeOpacity="0.4" />
 
       {/* Pitcher's mound */}
-      <polygon points={moundPts} fill="var(--px-dirt-dk)" />
+      <polygon points={moundPts} fill="var(--px-brown-dark)" />
 
       {/* Bases */}
       <Base gx={4} gy={2} occupied={first}  />

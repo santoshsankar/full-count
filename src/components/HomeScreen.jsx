@@ -28,12 +28,12 @@ function StadiumBG() {
       <rect width="480" height="700" fill="var(--px-navy)" />
 
       {/* outfield wall */}
-      <polygon points="40,320 440,320 460,380 20,380" fill="var(--px-navy-left)" />
+      <polygon points="40,320 440,320 460,380 20,380" fill="var(--px-navy-dark)" />
 
       {/* stands left */}
-      <polygon points="20,200 160,200 120,320 20,320" fill="var(--px-navy-mid)" />
+      <polygon points="20,200 160,200 120,320 20,320" fill="var(--px-navy-light)" />
       {/* stands right */}
-      <polygon points="460,200 320,200 360,320 460,320" fill="var(--px-navy-mid)" />
+      <polygon points="460,200 320,200 360,320 460,320" fill="var(--px-navy-light)" />
 
       {/* foul pole left */}
       <rect x="60" y="140" width="3" height="180" fill="var(--px-gold)" opacity="0.8" />
@@ -66,9 +66,9 @@ function StadiumBG() {
       ))}
 
       {/* field grass */}
-      <polygon points="40,380 440,380 400,480 80,480" fill="var(--px-grass)" opacity="0.6" />
+      <polygon points="40,380 440,380 400,480 80,480" fill="var(--px-green)" opacity="0.6" />
       {/* infield dirt */}
-      <polygon points="200,400 280,380 360,420 300,470 200,470 140,420" fill="var(--px-dirt)" opacity="0.5" />
+      <polygon points="200,400 280,380 360,420 300,470 200,470 140,420" fill="var(--px-brown)" opacity="0.5" />
 
       {/* stadium lights halo */}
       <radialGradient id="lightL" cx="15%" cy="15%" r="30%">
@@ -129,7 +129,7 @@ export default function HomeScreen({
             {lastDelta !== null && (
               <span
                 className="iq-badge__delta"
-                style={{ color: lastDelta >= 0 ? "var(--px-teal)" : "var(--px-red)" }}
+                style={{ color: lastDelta >= 0 ? "var(--px-navy)" : "var(--px-red)" }}
               >
                 {formatDelta(lastDelta)} LAST RUN
               </span>
@@ -150,8 +150,10 @@ export default function HomeScreen({
 
         {hasTeam && (
           <div className="home-team px-box">
-            <div className="home-team__name">{teamName}</div>
-            <div className="home-team__est">EST. {currentYear}</div>
+            <div className="home-team__header">
+              <div className="home-team__name">{teamName}</div>
+              <div className="home-team__est">EST. {currentYear}</div>
+            </div>
 
             <div className="home-team__section">
               <span className="home-team__section-label">LINEUP</span>

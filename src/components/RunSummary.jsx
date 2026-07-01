@@ -86,7 +86,7 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
         <div className="summary-record">
           {correct} FOR {total}
         </div>
-        <div className="summary-runs" style={{ color: runsImpact >= 0 ? "var(--px-teal)" : "var(--px-red)" }}>
+        <div className="summary-runs" style={{ color: runsImpact >= 0 ? "var(--px-green-light)" : "var(--px-red-light)" }}>
           {runsImpact >= 0 ? "+" : ""}{runsImpact.toFixed(1)} RUNS {runsImpact >= 0 ? "SAVED" : "COST"}
         </div>
         {finalScore && (
