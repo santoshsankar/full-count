@@ -108,12 +108,12 @@ export default function HomeScreen({
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="home-screen scanlines crt-vignette">
+    <div className="home-screen halftone-bg scanlines crt-vignette">
       <StadiumBG />
 
       <div className="home-content">
-        <div className="home-logo-wrap">
-          <h1 className="home-logo">FULL COUNT</h1>
+        <div className="home-logo-wrap foil-shine">
+          <h1 className="home-logo headline-90s print-misalign" data-text="FULL COUNT">FULL COUNT</h1>
           <p className="home-tagline">6 AT-BATS. PURE BASEBALL IQ.</p>
         </div>
 

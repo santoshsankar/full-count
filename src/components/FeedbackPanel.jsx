@@ -63,7 +63,7 @@ export default function FeedbackPanel({
 
       <div className="feedback-panel__top">
         <span
-          className="feedback-panel__verdict"
+          className="feedback-panel__verdict headline-90s"
           style={{ color: isGood ? "var(--px-green)" : "var(--px-red)" }}
         >
           {label}

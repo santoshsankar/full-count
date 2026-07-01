@@ -8,7 +8,7 @@ export default function BatterCard({ batter, compact = false }) {
 
   return (
     <div className="batter-card px-box">
-      <div className="batter-card__header">
+      <div className="batter-card__header foil-shine">
         <span className="batter-card__badge batter-card__badge--bat">AT THE PLATE</span>
         <div className="batter-card__name-wrap">
           <span className="batter-card__name">{batter.playerName || batter.displayName}</span>
@@ -20,9 +20,15 @@ export default function BatterCard({ batter, compact = false }) {
           <p className="batter-card__blurb">{batter.blurb}</p>
         )}
         <div className="batter-card__stats">
-          <StatBar label="POWER"   value={batter.power}      />
-          <StatBar label="CONTACT" value={batter.contact}    />
-          <StatBar label="EYE"     value={batter.discipline} />
+          <div className="stat-block stat-block--power">
+            <StatBar label="POWER"   value={batter.power}      />
+          </div>
+          <div className="stat-block stat-block--contact">
+            <StatBar label="CONTACT" value={batter.contact}    />
+          </div>
+          <div className="stat-block stat-block--eye">
+            <StatBar label="EYE"     value={batter.discipline} />
+          </div>
         </div>
 
         {!compact && (

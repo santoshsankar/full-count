@@ -48,12 +48,12 @@ export default function RunSummary({ runData, onRunItBack, onHome }) {
   }
 
   return (
-    <div className="run-summary">
+    <div className="run-summary halftone-bg">
       {/* 1 — Header */}
       <div className={`summary-section ${step >= 1 ? "summary-section--in" : ""}`}>
-        <div className="summary-header">
+        <div className="summary-header foil-shine">
           <span className="summary-header__rule" />
-          <h2 className="summary-title">FINAL</h2>
+          <h2 className="summary-title headline-90s print-misalign" data-text="FINAL">FINAL</h2>
           <span className="summary-header__rule" />
         </div>
       </div>

@@ -11,7 +11,7 @@ export default function PitcherCard({ pitcher, pitchHistory = [] }) {
 
   return (
     <div className="pitcher-card px-box">
-      <div className="pitcher-card__header">
+      <div className="pitcher-card__header foil-shine">
         <span className="pitcher-card__badge">ON THE MOUND</span>
         <div className="pitcher-card__vel" title={`Velocity: ${VEL_LABEL[pitcher.velocity] || ""}`}>
           {Array.from({ length: 4 }, (_, i) => (

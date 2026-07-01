@@ -10,6 +10,7 @@
   --px-navy:         #1a2f5c;
   --px-navy-mid:     #2b4a8a;
   --px-navy-lit:     #3d63ad;
+  --px-navy-dk:      #0a1628;  /* deep shadow navy for chunky headline layers */
   /* Card stock — warmer, brighter cream */
   --px-cream:        #fff4d6;
   --px-cream-dk:     #f0dba0;
@@ -387,7 +388,7 @@ body {
   color: var(--px-ink);
   background: var(--px-gold);
   border: 4px solid var(--px-ink);
-  box-shadow: 6px 6px 0 var(--px-gold-dk);
+  box-shadow: 8px 8px 0 var(--px-gold-dk);
   padding: 16px 40px;
   border-radius: 0;
   width: 100%;
@@ -397,7 +398,7 @@ body {
   min-height: 64px;
 }
 .btn-cta:active {
-  transform: translate(6px, 6px);
+  transform: translate(8px, 8px);
   box-shadow: none;
 }
 
@@ -565,10 +566,11 @@ body {
   width: 100%;
   min-height: 56px;
   border-radius: 0;
+  box-shadow: 8px 8px 0 var(--px-gold-dk);
   transition: transform 100ms steps(1), box-shadow 100ms steps(1);
 }
 .btn-throw:active {
-  transform: translate(4px, 4px);
+  transform: translate(8px, 8px);
   box-shadow: none !important;
 }
 
@@ -679,11 +681,11 @@ body {
   border: 3px solid var(--px-red-dk);
   min-height: 72px;
   border-radius: 0;
-  box-shadow: 4px 4px 0 var(--px-red-dk);
+  box-shadow: 8px 8px 0 var(--px-red-dk);
   transition: transform 100ms steps(1), box-shadow 100ms steps(1);
 }
 .btn-swing:active {
-  transform: translate(4px, 4px);
+  transform: translate(8px, 8px);
   box-shadow: none;
 }
 .btn-take {
@@ -696,11 +698,11 @@ body {
   border: 3px solid var(--px-chalk-dim);
   min-height: 72px;
   border-radius: 0;
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
   transition: transform 100ms steps(1), box-shadow 100ms steps(1);
 }
 .btn-take:active {
-  transform: translate(4px, 4px);
+  transform: translate(8px, 8px);
   box-shadow: none;
 }
 
@@ -2343,4 +2345,96 @@ body {
 }
 @media (min-width: 600px) {
   .app-root { padding: 32px 32px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   1990s BROADCAST / TOPPS STADIUM CLUB AESTHETIC LAYER
+   Layers on top of the pixel/CRT foundation — never replaces it.
+   ══════════════════════════════════════════════════════════ */
+
+/* 1 — Diagonal foil-shine band (card headers, logo band, summary header) */
+.foil-shine {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    var(--px-navy-mid) 0%,
+    var(--px-navy-lit) 35%,
+    var(--px-gold) 48%,
+    var(--px-gold) 52%,
+    var(--px-navy-lit) 65%,
+    var(--px-navy-mid) 100%
+  );
+  background-size: 250% 250%;
+  animation: foilShift 4s steps(8) infinite;
+}
+@keyframes foilShift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+/* Respect reduced-motion / low-end devices — hold a static foil gradient. */
+@media (prefers-reduced-motion: reduce) {
+  .foil-shine { animation: none; background-position: 50% 50%; }
+}
+
+/* 2 — Chunky broadcast headline: hard offset shadow layers (not blurred) */
+.headline-90s {
+  font-family: 'Bebas Neue', sans-serif;
+  color: var(--px-gold);
+  text-shadow:
+    2px 2px 0 var(--px-navy),
+    4px 4px 0 var(--px-navy-dk),
+    4px 4px 8px rgba(0,0,0,0.4);
+  letter-spacing: 1px;
+}
+
+/* 3 — Color-blocked stat panels (ESPN/Genesis broadcast look) */
+.stat-block {
+  background: var(--px-navy-mid);
+  border-left: 6px solid var(--px-gold);
+  padding: 6px 10px;
+  margin-bottom: 4px;
+}
+.stat-block--power   { border-left-color: var(--px-red);   }
+.stat-block--contact { border-left-color: var(--px-teal);  }
+.stat-block--speed   { border-left-color: var(--px-green); }
+.stat-block--eye     { border-left-color: var(--px-gold);  }
+/* Stat text sits on a dark block now — force light, full-contrast text. */
+.stat-block .stat-bar-label { color: var(--px-chalk); opacity: 1; }
+.stat-block .stat-bar-num   { color: var(--px-chalk); }
+
+/* 4 — Halftone print-dot texture (hero / summary backgrounds only) */
+.halftone-bg {
+  background-image: radial-gradient(
+    circle,
+    rgba(255,255,255,0.06) 1px,
+    transparent 1px
+  );
+  background-size: 6px 6px;
+}
+
+/* 5 — Print-registration misalignment (signature flourish — logo + FINAL only) */
+.print-misalign {
+  position: relative;
+}
+.print-misalign::before,
+.print-misalign::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+}
+.print-misalign::before {
+  color: var(--px-teal);
+  transform: translate(-1px, 1px);
+  opacity: 0.5;
+  z-index: -1;
+}
+.print-misalign::after {
+  color: var(--px-red);
+  transform: translate(1px, -1px);
+  opacity: 0.5;
+  z-index: -1;
 }
